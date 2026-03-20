@@ -22,10 +22,14 @@ describe('Keyboard Shortcuts', () => {
   });
 
   it('Test 1: Open / Close Chat Panel (Alt+K / ⌘+Shift+K)', () => {
+    // Wait for extension to be fully loaded before testing keyboard shortcut
+    cy.get('[data-testid="extension-header-action-ai.action.openChat"]').should('be.visible');
+
     // Guard: ensure chat is closed before testing open shortcut
     cy.get('body').then(($body) => {
       if ($body.find('[data-testid="rancher-ai-ui-chat-container"]').length > 0) {
-        return chat.close();
+        cy.get('[data-testid="rancher-ai-ui-chat-close-button"]').click();
+        cy.get('[data-testid="rancher-ai-ui-chat-container"]').should('not.exist');
       }
     });
 
@@ -42,8 +46,9 @@ describe('Keyboard Shortcuts', () => {
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('01-chat-opened');
 
-    // Close chat panel using keyboard shortcut
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    // Close chat panel using keyboard shortcut via textarea (Console.vue handles Alt+K in textarea)
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').click();
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type(isMac ? '{meta+shift+k}' : '{alt+k}');
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').should('not.exist');
 
@@ -198,7 +203,7 @@ describe('Keyboard Shortcuts', () => {
     // Focus the textarea before navigating prompt history
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').click();
 
-    // Navigate up through prompt history
+    // Navigate up through prompt history (history navigation shows completeText suggestion)
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
     cy.wait(500);
 
@@ -215,9 +220,10 @@ describe('Keyboard Shortcuts', () => {
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('12-arrow-down');
 
-    // Textarea should have content after prompt history navigation
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .should('not.have.value', '');
+    // Prompt history navigation shows suggestion via completeText overlay (not textarea .value)
+    cy.get('[data-testid="rancher-ai-ui-chat-console"]')
+      .find('.chat-input-complete')
+      .should('be.visible');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('13-tab-accepted');
