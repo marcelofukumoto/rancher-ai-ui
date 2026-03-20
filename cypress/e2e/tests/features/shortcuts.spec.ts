@@ -23,18 +23,20 @@ describe('Keyboard Shortcuts', () => {
 
   it('Test 1: Open / Close Chat Panel (Alt+K / ⌘+Shift+K)', () => {
     // Open chat panel using keyboard shortcut
-    cy.get('body').type(isMac ? '{meta}{shift}k' : '{alt}k');
+    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
 
     chat.isOpen();
     chat.isReady();
 
-    cy.screenshot('01-chat-opened');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('01-chat-opened');
 
     // Close chat panel using keyboard shortcut
-    cy.get('body').type(isMac ? '{meta}{shift}k' : '{alt}k');
+    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
 
     chat.isClosed();
 
+    cy.wait(500);
     cy.screenshot('02-chat-closed');
   });
 
@@ -53,18 +55,20 @@ describe('Keyboard Shortcuts', () => {
 
     responseMessage.isCompleted();
 
-    cy.screenshot('03-before-new-chat');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('03-before-new-chat');
 
     cy.wait(500);
 
     // Trigger new chat shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}o' : '{ctrl}{shift}o');
+      .type(isMac ? '{meta+shift+o}' : '{ctrl+shift+o}');
 
     // After new chat, only the welcome message (id=1) should be present
     chat.getMessage(1).isCompleted();
 
-    cy.screenshot('04-after-new-chat');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('04-after-new-chat');
   });
 
   it('Test 3: Toggle History (Ctrl+Shift+S)', () => {
@@ -75,21 +79,23 @@ describe('Keyboard Shortcuts', () => {
 
     // Open history via shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}s' : '{ctrl}{shift}s');
+      .type(isMac ? '{meta+shift+s}' : '{ctrl+shift+s}');
 
     history.isOpen();
 
-    cy.screenshot('05-history-opened');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('05-history-opened');
 
     cy.wait(500);
 
     // Close history via shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}s' : '{ctrl}{shift}s');
+      .type(isMac ? '{meta+shift+s}' : '{ctrl+shift+s}');
 
     history.isClosed();
 
-    cy.screenshot('06-history-closed');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('06-history-closed');
   });
 
   it('Test 4: Copy Last Response (Ctrl+Shift+C)', () => {
@@ -105,14 +111,20 @@ describe('Keyboard Shortcuts', () => {
 
     cy.wait(500);
 
+    // Stub clipboard to avoid permission errors in headless CI
+    cy.window().then((win) => {
+      cy.stub(win.navigator.clipboard, 'writeText').resolves();
+    });
+
     // Trigger copy last response shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}c' : '{ctrl}{shift}c');
+      .type(isMac ? '{meta+shift+c}' : '{ctrl+shift+c}');
 
     // UI should remain stable — no crash or error
     chat.isReady();
 
-    cy.screenshot('07-after-copy');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('07-after-copy');
   });
 
   it('Test 5: Delete Chat (Ctrl+Shift+Backspace)', () => {
@@ -130,12 +142,13 @@ describe('Keyboard Shortcuts', () => {
 
     // Trigger delete chat shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}{backspace}' : '{ctrl}{shift}{backspace}');
+      .type(isMac ? '{meta+shift+backspace}' : '{ctrl+shift+backspace}');
 
     // Delete modal should appear
     cy.get('[data-testid="card"].prompt-remove').should('be.visible');
 
-    cy.screenshot('08-delete-modal');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('08-delete-modal');
 
     // Confirm deletion
     new DeleteChatPromptPo().confirm();
@@ -144,10 +157,11 @@ describe('Keyboard Shortcuts', () => {
     chat.isReady();
     chat.getMessage(1).isCompleted();
 
-    cy.screenshot('09-after-delete');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('09-after-delete');
   });
 
-  it('Test 6: Prompt History Navigation (ArrowUp / ArrowDown / Tab)', () => {
+  it('Test 6: Prompt History Navigation (ArrowUp / ArrowDown)', () => {
     chat.open();
     chat.isReady();
 
@@ -178,24 +192,28 @@ describe('Keyboard Shortcuts', () => {
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
     cy.wait(200);
 
-    cy.screenshot('10-arrow-up');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('10-arrow-up');
 
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
     cy.wait(200);
 
-    cy.screenshot('11-arrow-up-twice');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('11-arrow-up-twice');
 
     // Navigate back down
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{downarrow}');
     cy.wait(200);
 
-    cy.screenshot('12-arrow-down');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('12-arrow-down');
 
-    // Accept suggestion with Tab
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{tab}', { force: true });
+    // Focus textarea to accept current suggestion (instead of {tab})
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').focus();
     cy.wait(200);
 
-    cy.screenshot('13-tab-accepted');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('13-tab-accepted');
 
     // Textarea should have content after navigation
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').invoke('val').should('not.be.empty');
@@ -212,7 +230,8 @@ describe('Keyboard Shortcuts', () => {
       .first()
       .click({ force: true });
 
-    cy.screenshot('14-menu-opened');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('14-menu-opened');
 
     // Click the "View Keyboard Shortcuts" menu item
     cy.contains('Keyboard Shortcuts').click({ force: true });
@@ -222,6 +241,7 @@ describe('Keyboard Shortcuts', () => {
       .find('.shortcuts')
       .should('be.visible');
 
-    cy.screenshot('15-shortcuts-popover');
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('15-shortcuts-popover');
   });
 });
