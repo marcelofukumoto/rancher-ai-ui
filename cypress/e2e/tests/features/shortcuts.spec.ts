@@ -22,8 +22,17 @@ describe('Keyboard Shortcuts', () => {
   });
 
   it('Test 1: Open / Close Chat Panel (Alt+K / ⌘+Shift+K)', () => {
-    // Open chat panel using keyboard shortcut
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    // Guard: ensure chat is closed before testing open shortcut
+    cy.get('body').then(($body) => {
+      if ($body.find('[data-testid="rancher-ai-ui-chat-container"]').length > 0) {
+        chat.close();
+      }
+    });
+
+    // Open chat panel using keyboard shortcut (trigger on document for global listener)
+    cy.document().trigger('keydown', isMac
+      ? { key: 'k', code: 'KeyK', metaKey: true, shiftKey: true, bubbles: true, cancelable: true }
+      : { key: 'k', code: 'KeyK', altKey: true, bubbles: true, cancelable: true });
 
     chat.isOpen();
     chat.isReady();
@@ -31,8 +40,10 @@ describe('Keyboard Shortcuts', () => {
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('01-chat-opened');
 
-    // Close chat panel using keyboard shortcut
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    // Close chat panel using keyboard shortcut (fire on document for global listener)
+    cy.document().trigger('keydown', isMac
+      ? { key: 'k', code: 'KeyK', metaKey: true, shiftKey: true, bubbles: true, cancelable: true }
+      : { key: 'k', code: 'KeyK', altKey: true, bubbles: true, cancelable: true });
 
     chat.isClosed();
 
@@ -184,39 +195,46 @@ describe('Keyboard Shortcuts', () => {
       responseMessage.isCompleted();
     }
 
-    const textarea = cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]');
+    // Focus the textarea before navigating prompt history
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').click();
 
-    textarea.click();
-
-    // Navigate up through prompt history
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
-    cy.wait(200);
+    // Navigate up through prompt history using explicit keydown triggers
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
+      .trigger('keydown', { key: 'ArrowUp', code: 'ArrowUp', bubbles: true, cancelable: true });
+    cy.wait(300);
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('10-arrow-up');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
-    cy.wait(200);
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
+      .trigger('keydown', { key: 'ArrowUp', code: 'ArrowUp', bubbles: true, cancelable: true });
+    cy.wait(300);
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('11-arrow-up-twice');
 
     // Navigate back down
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{downarrow}');
-    cy.wait(200);
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
+      .trigger('keydown', { key: 'ArrowDown', code: 'ArrowDown', bubbles: true, cancelable: true });
+    cy.wait(300);
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('12-arrow-down');
 
-    // Focus textarea to accept current suggestion (instead of {tab})
+    // Ensure textarea retains focus after navigation
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').focus();
-    cy.wait(200);
+    cy.wait(300);
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('13-tab-accepted');
 
-    // Textarea should have content after navigation
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').invoke('val').should('not.be.empty');
+    // Textarea should have content after prompt history navigation
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
+      .should(($el) => {
+        const val = $el.val() as string;
+
+        expect(val).to.not.equal('');
+      });
   });
 
   it('Test 7: Shortcuts Popover', () => {
