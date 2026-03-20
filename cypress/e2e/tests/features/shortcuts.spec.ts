@@ -29,10 +29,8 @@ describe('Keyboard Shortcuts', () => {
       }
     });
 
-    // Open chat panel using keyboard shortcut (trigger on document for global listener)
-    cy.document().trigger('keydown', isMac
-      ? { key: 'k', code: 'KeyK', metaKey: true, shiftKey: true, bubbles: true, cancelable: true }
-      : { key: 'k', code: 'KeyK', altKey: true, bubbles: true, cancelable: true });
+    // Open chat panel using keyboard shortcut
+    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
 
     chat.isOpen();
     chat.isReady();
@@ -40,10 +38,8 @@ describe('Keyboard Shortcuts', () => {
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('01-chat-opened');
 
-    // Close chat panel using keyboard shortcut (fire on document for global listener)
-    cy.document().trigger('keydown', isMac
-      ? { key: 'k', code: 'KeyK', metaKey: true, shiftKey: true, bubbles: true, cancelable: true }
-      : { key: 'k', code: 'KeyK', altKey: true, bubbles: true, cancelable: true });
+    // Close chat panel using keyboard shortcut
+    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
 
     chat.isClosed();
 
@@ -198,24 +194,21 @@ describe('Keyboard Shortcuts', () => {
     // Focus the textarea before navigating prompt history
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').click();
 
-    // Navigate up through prompt history using explicit keydown triggers
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .trigger('keydown', { key: 'ArrowUp', code: 'ArrowUp', bubbles: true, cancelable: true });
+    // Navigate up through prompt history
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
     cy.wait(300);
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('10-arrow-up');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .trigger('keydown', { key: 'ArrowUp', code: 'ArrowUp', bubbles: true, cancelable: true });
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
     cy.wait(300);
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('11-arrow-up-twice');
 
     // Navigate back down
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .trigger('keydown', { key: 'ArrowDown', code: 'ArrowDown', bubbles: true, cancelable: true });
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{downarrow}');
     cy.wait(300);
 
     cy.wait(500);
