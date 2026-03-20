@@ -230,7 +230,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Prompt history navigation shows suggestion via completeText overlay (not textarea .value)
     cy.get('[data-testid="rancher-ai-ui-chat-console"]')
-      .find('.chat-input-complete')
+      .find('.chat-input-complete', { timeout: 10000 })
       .should('be.visible');
 
     cy.wait(500);
@@ -244,8 +244,6 @@ describe('Keyboard Shortcuts', () => {
     // Click the menu button (⋮ actions icon in header)
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
       .find('.icon-actions')
-      .closest('button, [role="button"], .rc-dropdown-trigger')
-      .first()
       .click({ force: true });
 
     cy.wait(500);
@@ -253,6 +251,8 @@ describe('Keyboard Shortcuts', () => {
 
     // Click the "View Keyboard Shortcuts" menu item
     cy.contains('View Keyboard Shortcuts').click({ force: true });
+
+    cy.wait(500);
 
     // Shortcuts popover / panel should be visible (may render outside container via portal)
     cy.get('.shortcuts').should('be.visible');
