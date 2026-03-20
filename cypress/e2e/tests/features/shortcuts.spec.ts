@@ -129,7 +129,15 @@ describe('Keyboard Shortcuts', () => {
 
     // Stub clipboard to avoid permission errors in headless CI
     cy.window().then((win) => {
-      cy.stub(win.navigator.clipboard, 'writeText').resolves();
+      if (win.navigator.clipboard) {
+        cy.stub(win.navigator.clipboard, 'writeText').resolves();
+      } else {
+        Object.defineProperty(win.navigator, 'clipboard', {
+          value:        { writeText: cy.stub().resolves() },
+          writable:     true,
+          configurable: true,
+        });
+      }
     });
 
     // Trigger copy last response shortcut
@@ -244,12 +252,10 @@ describe('Keyboard Shortcuts', () => {
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('14-menu-opened');
 
     // Click the "View Keyboard Shortcuts" menu item
-    cy.contains('Keyboard Shortcuts').click({ force: true });
+    cy.contains('View Keyboard Shortcuts').click({ force: true });
 
-    // Shortcuts popover / panel should be visible
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .find('.shortcuts')
-      .should('be.visible');
+    // Shortcuts popover / panel should be visible (may render outside container via portal)
+    cy.get('.shortcuts').should('be.visible');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('15-shortcuts-popover');
