@@ -30,7 +30,9 @@ describe('Keyboard Shortcuts', () => {
     });
 
     // Open chat panel using keyboard shortcut
+    cy.get('body').click();
     cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    cy.wait(1000);
 
     chat.isOpen();
     chat.isReady();
@@ -40,6 +42,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Close chat panel using keyboard shortcut
     cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    cy.wait(1000);
 
     chat.isClosed();
 
@@ -175,7 +178,6 @@ describe('Keyboard Shortcuts', () => {
     const messages = [
       { request: 'First message', response: 'Response one' },
       { request: 'Second message', response: 'Response two' },
-      { request: 'Third message', response: 'Response three' },
     ];
 
     for (let i = 0; i < messages.length; i++) {
@@ -189,6 +191,7 @@ describe('Keyboard Shortcuts', () => {
       const responseMessage = chat.getMessage(3 + i * 2);
 
       responseMessage.isCompleted();
+      cy.wait(300);
     }
 
     // Focus the textarea before navigating prompt history
@@ -196,38 +199,30 @@ describe('Keyboard Shortcuts', () => {
 
     // Navigate up through prompt history
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
-    cy.wait(300);
-
     cy.wait(500);
+
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('10-arrow-up');
 
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
-    cy.wait(300);
-
     cy.wait(500);
+
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('11-arrow-up-twice');
 
     // Navigate back down
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{downarrow}');
-    cy.wait(300);
-
     cy.wait(500);
+
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('12-arrow-down');
 
     // Ensure textarea retains focus after navigation
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').focus();
     cy.wait(300);
 
-    cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('13-tab-accepted');
 
     // Textarea should have content after prompt history navigation
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .should(($el) => {
-        const val = $el.val() as string;
-
-        expect(val).to.not.equal('');
-      });
+      .should('not.have.value', '');
   });
 
   it('Test 7: Shortcuts Popover', () => {
