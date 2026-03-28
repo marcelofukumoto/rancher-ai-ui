@@ -162,22 +162,23 @@ describe('Keyboard Shortcuts', () => {
     chat.getMessage(7).isCompleted();
 
     // Focus textarea and navigate prompt history with ArrowUp.
-    // Arrow keys trigger history navigation when the textarea is empty.
+    // ArrowUp shows the previous prompt as a ghost-text suggestion in the overlay
+    // (completeText), not in the textarea value itself.
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').click().type('{uparrow}');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('10-arrow-up');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .should('have.value', 'Third message');
+    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete')
+      .should('contain.text', 'Third message');
 
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('11-arrow-up-twice');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .should('have.value', 'Second message');
+    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete')
+      .should('contain.text', 'Second message');
 
     // Navigate back down
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{downarrow}');
@@ -185,8 +186,8 @@ describe('Keyboard Shortcuts', () => {
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('12-arrow-down');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .should('have.value', 'Third message');
+    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete')
+      .should('contain.text', 'Third message');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('13-prompt-selected');
@@ -196,8 +197,9 @@ describe('Keyboard Shortcuts', () => {
     chat.open();
     chat.isReady();
 
-    // Click the chat menu button (⋮ actions icon)
-    cy.get('[data-testid="rancher-ai-ui-chat-menu-button"]').click();
+    // Click the chat menu button (⋮ actions icon) via the menu container
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]')
+      .find('.chat-console-menu-container button').click();
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('14-menu-opened');
