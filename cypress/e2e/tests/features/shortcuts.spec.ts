@@ -42,9 +42,10 @@ describe('Keyboard Shortcuts', () => {
     // Wait for guard to settle
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').should('not.exist');
 
-    // Open chat panel using keyboard shortcut
-    cy.get('body').click();
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    // Open chat panel using keyboard shortcut — use trigger() for reliable keydown simulation
+    cy.get('body').trigger('keydown', isMac
+      ? { metaKey: true, shiftKey: true, key: 'k', keyCode: 75, bubbles: true }
+      : { altKey: true, key: 'k', keyCode: 75, bubbles: true });
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').should('be.visible');
     chat.isReady();
@@ -54,7 +55,9 @@ describe('Keyboard Shortcuts', () => {
 
     // Close chat panel using keyboard shortcut via textarea (Console.vue handles Alt+K in textarea)
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').click();
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').trigger('keydown', isMac
+      ? { metaKey: true, shiftKey: true, key: 'k', keyCode: 75, bubbles: true }
+      : { altKey: true, key: 'k', keyCode: 75, bubbles: true });
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').should('not.exist');
 
@@ -187,7 +190,7 @@ describe('Keyboard Shortcuts', () => {
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('08-delete-modal');
 
     // Confirm deletion
-    cy.get('[data-testid="rancher-ai-ui-delete-chat-confirm-button"]').click();
+    cy.get('[data-testid="prompt-remove-confirm-button"]').click();
 
     // After deletion the chat should reset to welcome state
     chat.isReady();
@@ -248,8 +251,9 @@ describe('Keyboard Shortcuts', () => {
     chat.open();
     chat.isReady();
 
-    // Click the menu button (⋮ actions icon in header)
-    cy.get('[data-testid="rancher-ai-ui-chat-menu-button"]')
+    // Click the menu button (⋮ actions icon in header) — use .icon-actions since no data-testid exists
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]')
+      .find('.icon-actions')
       .click({ force: true });
 
     cy.wait(500);
