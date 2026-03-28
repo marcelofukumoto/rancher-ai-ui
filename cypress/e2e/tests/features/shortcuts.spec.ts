@@ -20,7 +20,7 @@ describe('Keyboard Shortcuts', () => {
 
   it('Test 1: Open / Close Chat Panel (Alt+K)', () => {
     // Open chat via keyboard shortcut
-    cy.get('body').type(isMac ? '{meta}{shift}k' : '{alt}k');
+    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
     chat.isOpen();
     chat.isReady();
 
@@ -28,7 +28,7 @@ describe('Keyboard Shortcuts', () => {
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('01-chat-opened');
 
     // Close chat via keyboard shortcut
-    cy.get('body').type(isMac ? '{meta}{shift}k' : '{alt}k');
+    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
     chat.isClosed();
 
     cy.wait(500);
