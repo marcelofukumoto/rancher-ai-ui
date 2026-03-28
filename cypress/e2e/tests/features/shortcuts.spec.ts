@@ -19,15 +19,16 @@ describe('Keyboard Shortcuts', () => {
   afterEach(() => cy.cleanChatHistory());
 
   it('Test 1: Open / Close Chat Panel (Alt+K)', () => {
-    // Open chat via keyboard shortcut
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    // Open chat via keyboard shortcut using real browser events
+    cy.realPress(isMac ? ['Meta', 'Shift', 'k'] : ['Alt', 'k']);
     chat.isOpen();
+    chat.isReady();
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('01-chat-opened');
 
-    // Close chat via keyboard shortcut
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    // Close chat via keyboard shortcut using real browser events
+    cy.realPress(isMac ? ['Meta', 'Shift', 'k'] : ['Alt', 'k']);
     chat.isClosed();
 
     cy.wait(500);
@@ -156,22 +157,25 @@ describe('Keyboard Shortcuts', () => {
     chat.sendMessage('Third message');
     chat.getMessage(7).isCompleted();
 
-    // Focus textarea and navigate prompt history with ArrowUp
+    // Focus textarea and navigate prompt history with ArrowUp.
+    // Arrow keys only trigger history navigation when the textarea is empty;
+    // the selected history text is shown in the .chat-input-complete overlay,
+    // not written to the textarea's value.
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').click().type('{uparrow}');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('10-arrow-up');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .should('have.value', 'Third message');
+    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete .text')
+      .should('contain.text', 'Third message');
 
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('11-arrow-up-twice');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .should('have.value', 'Second message');
+    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete .text')
+      .should('contain.text', 'Second message');
 
     // Navigate back down
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{downarrow}');
@@ -179,8 +183,8 @@ describe('Keyboard Shortcuts', () => {
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('12-arrow-down');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
-      .should('have.value', 'Third message');
+    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete .text')
+      .should('contain.text', 'Third message');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('13-prompt-selected');
