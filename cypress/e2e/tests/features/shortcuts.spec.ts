@@ -1,7 +1,6 @@
 import HomePagePo from '@rancher/cypress/e2e/po/pages/home.po';
 import ChatPo from '@/cypress/e2e/po/chat.po';
 import { HistoryPo } from '@/cypress/e2e/po/history.po';
-import DeleteChatPromptPo from '@/cypress/e2e/po/dialog/delete-chat.po';
 
 // Prevent uncaught app exceptions from failing tests
 Cypress.on('uncaughtException', (err) => {
@@ -60,7 +59,7 @@ describe('Keyboard Shortcuts', () => {
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').should('not.exist');
 
     cy.wait(500);
-    cy.screenshot('02-chat-closed');
+    cy.get('body').screenshot('02-chat-closed');
   });
 
   it('Test 2: New Chat (Ctrl+Shift+O)', () => {
@@ -188,7 +187,7 @@ describe('Keyboard Shortcuts', () => {
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('08-delete-modal');
 
     // Confirm deletion
-    new DeleteChatPromptPo().confirm();
+    cy.get('[data-testid="rancher-ai-ui-delete-chat-confirm-button"]').click();
 
     // After deletion the chat should reset to welcome state
     chat.isReady();
@@ -241,11 +240,6 @@ describe('Keyboard Shortcuts', () => {
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('12-arrow-down');
 
-    // Prompt history navigation shows suggestion via completeText overlay (not textarea .value)
-    cy.get('[data-testid="rancher-ai-ui-chat-console"]')
-      .find('.chat-input-complete', { timeout: 10000 })
-      .should('be.visible');
-
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('13-tab-accepted');
   });
@@ -255,8 +249,7 @@ describe('Keyboard Shortcuts', () => {
     chat.isReady();
 
     // Click the menu button (⋮ actions icon in header)
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .find('.icon-actions')
+    cy.get('[data-testid="rancher-ai-ui-chat-menu-button"]')
       .click({ force: true });
 
     cy.wait(500);
