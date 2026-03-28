@@ -18,7 +18,11 @@ describe('Keyboard Shortcuts', () => {
 
   afterEach(() => cy.cleanChatHistory());
 
-  it('Test 1: Open / Close Chat Panel (Alt+K)', () => {
+  it('Test 1: Open / Close Chat Panel (Alt+K / ⌘+Shift+K)', () => {
+    // Wait for page to fully initialise and ensure body has focus
+    cy.wait(1000);
+    cy.get('body').click();
+
     // Open chat via keyboard shortcut
     cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
     chat.isOpen();
