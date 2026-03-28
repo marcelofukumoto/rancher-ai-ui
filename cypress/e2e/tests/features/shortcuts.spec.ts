@@ -59,7 +59,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Trigger new chat shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}o' : '{ctrl}{shift}o');
+      .type(isMac ? '{meta+shift+o}' : '{ctrl+shift+o}');
 
     // Chat should reset to welcome state (only first message)
     chat.getMessage(1).isCompleted();
@@ -74,7 +74,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Open history via keyboard shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}s' : '{ctrl}{shift}s');
+      .type(isMac ? '{meta+shift+s}' : '{ctrl+shift+s}');
 
     history.isOpen();
 
@@ -83,7 +83,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Close history via keyboard shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}s' : '{ctrl}{shift}s');
+      .type(isMac ? '{meta+shift+s}' : '{ctrl+shift+s}');
 
     history.isClosed();
 
@@ -108,7 +108,7 @@ describe('Keyboard Shortcuts', () => {
     });
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}c' : '{ctrl}{shift}c');
+      .type(isMac ? '{meta+shift+c}' : '{ctrl+shift+c}');
 
     // UI remains stable after copy
     chat.isReady();
@@ -129,7 +129,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Trigger delete chat shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta}{shift}{backspace}' : '{ctrl}{shift}{backspace}');
+      .type(isMac ? '{meta+shift+backspace}' : '{ctrl+shift+backspace}');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('08-delete-modal');
@@ -162,24 +162,22 @@ describe('Keyboard Shortcuts', () => {
     chat.getMessage(7).isCompleted();
 
     // Focus textarea and navigate prompt history with ArrowUp.
-    // Arrow keys only trigger history navigation when the textarea is empty;
-    // the selected history text is shown in the .chat-input-complete overlay,
-    // not written to the textarea's value.
+    // Arrow keys trigger history navigation when the textarea is empty.
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').click().type('{uparrow}');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('10-arrow-up');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete .text')
-      .should('contain.text', 'Third message');
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
+      .should('have.value', 'Third message');
 
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{uparrow}');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('11-arrow-up-twice');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete .text')
-      .should('contain.text', 'Second message');
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
+      .should('have.value', 'Second message');
 
     // Navigate back down
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').type('{downarrow}');
@@ -187,8 +185,8 @@ describe('Keyboard Shortcuts', () => {
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('12-arrow-down');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-console"] .chat-input-complete .text')
-      .should('contain.text', 'Third message');
+    cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]')
+      .should('have.value', 'Third message');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('13-prompt-selected');
@@ -199,9 +197,7 @@ describe('Keyboard Shortcuts', () => {
     chat.isReady();
 
     // Click the chat menu button (⋮ actions icon)
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .find('.icon-actions')
-      .click();
+    cy.get('[data-testid="rancher-ai-ui-chat-menu-button"]').click();
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('14-menu-opened');
