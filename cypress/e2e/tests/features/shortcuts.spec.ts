@@ -20,7 +20,7 @@ describe('Keyboard Shortcuts', () => {
 
   it('Test 1: Open / Close Chat Panel (Alt+K)', () => {
     // Open chat via keyboard shortcut
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    cy.get('body').type(isMac ? '{meta}{shift}k' : '{alt}k');
     chat.isOpen();
     chat.isReady();
 
@@ -28,7 +28,7 @@ describe('Keyboard Shortcuts', () => {
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('01-chat-opened');
 
     // Close chat via keyboard shortcut
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    cy.get('body').type(isMac ? '{meta}{shift}k' : '{alt}k');
     chat.isClosed();
 
     cy.wait(500);
@@ -55,7 +55,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Trigger new chat shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta+shift+o}' : '{ctrl+shift+o}');
+      .type(isMac ? '{meta}{shift}o' : '{ctrl}{shift}o');
 
     // Chat should reset to welcome state (only first message)
     chat.getMessage(1).isCompleted();
@@ -70,7 +70,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Open history via keyboard shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta+shift+s}' : '{ctrl+shift+s}');
+      .type(isMac ? '{meta}{shift}s' : '{ctrl}{shift}s');
 
     history.isOpen();
 
@@ -79,7 +79,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Close history via keyboard shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta+shift+s}' : '{ctrl+shift+s}');
+      .type(isMac ? '{meta}{shift}s' : '{ctrl}{shift}s');
 
     history.isClosed();
 
@@ -104,7 +104,7 @@ describe('Keyboard Shortcuts', () => {
     });
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta+shift+c}' : '{ctrl+shift+c}');
+      .type(isMac ? '{meta}{shift}c' : '{ctrl}{shift}c');
 
     // UI remains stable after copy
     chat.isReady();
@@ -125,7 +125,7 @@ describe('Keyboard Shortcuts', () => {
 
     // Trigger delete chat shortcut
     cy.get('[data-testid="rancher-ai-ui-chat-container"]')
-      .type(isMac ? '{meta+shift+backspace}' : '{ctrl+shift+backspace}');
+      .type(isMac ? '{meta}{shift}{backspace}' : '{ctrl}{shift}{backspace}');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('08-delete-modal');
