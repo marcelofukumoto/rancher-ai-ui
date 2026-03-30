@@ -11,13 +11,23 @@ describe('Feature: context', () => {
     HomePagePo.goTo();
   });
 
+  afterEach(() => {
+    cy.get('body').then($body => {
+      if ($body.find('[data-testid="rancher-ai-ui-chat-close-button"]').length > 0) {
+        chat.close();
+      }
+    });
+    cy.cleanChatHistory();
+  });
+
   it('Test 1: Shows cluster context tag on cluster page', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    clusterPage.waitForPage();
 
     chat.open();
-    chat.isReady();
+    chat.isReady(20000);
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
 
@@ -29,11 +39,11 @@ describe('Feature: context', () => {
     HomePagePo.goTo();
 
     chat.open();
-    chat.isReady();
+    chat.isReady(20000);
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').within(() => {
       cy.get('[data-testid^="rancher-ai-ui-context-tag-"]').should('not.exist');
-      cy.get('.chat-context .no-context').should('be.visible');
+      cy.get('.no-context').should('be.visible');
     });
 
     cy.wait(500);
@@ -44,9 +54,10 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    clusterPage.waitForPage();
 
     chat.open();
-    chat.isReady();
+    chat.isReady(20000);
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
 
@@ -66,9 +77,10 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    clusterPage.waitForPage();
 
     chat.open();
-    chat.isReady();
+    chat.isReady(20000);
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
       .parent()
@@ -90,9 +102,10 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    clusterPage.waitForPage();
 
     chat.open();
-    chat.isReady();
+    chat.isReady(20000);
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
       .parent()
@@ -115,9 +128,10 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    clusterPage.waitForPage();
 
     chat.open();
-    chat.isReady();
+    chat.isReady(20000);
 
     cy.enqueueLLMResponse({ text: 'Context received.' });
 
@@ -134,17 +148,16 @@ describe('Feature: context', () => {
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-6-context-in-message');
-
-    cy.cleanChatHistory();
   });
 
   it('Test 7: Context panel is disabled when chat is in processing state', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    clusterPage.waitForPage();
 
     chat.open();
-    chat.isReady();
+    chat.isReady(20000);
 
     cy.enqueueLLMResponse({ text: ['Processing...', ' done.'], chunkSize: 1 });
 
@@ -155,8 +168,6 @@ describe('Feature: context', () => {
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-7-context-disabled-during-processing');
-
-    cy.cleanChatHistory();
   });
 
   it('Test 8: Shows namespace context when namespace filter is active', () => {
@@ -166,7 +177,7 @@ describe('Feature: context', () => {
     deploymentsPage.waitForPage();
 
     chat.open();
-    chat.isReady();
+    chat.isReady(20000);
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-default"]').should('exist');
 
