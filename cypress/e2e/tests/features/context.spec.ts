@@ -113,6 +113,7 @@ describe('Feature: context', () => {
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('not.exist');
 
     cy.get('.context-trigger').click();
+    cy.wait(500);
 
     cy.contains('cluster:').click({ force: true });
 
@@ -168,6 +169,8 @@ describe('Feature: context', () => {
     cy.get('[data-testid="rancher-ai-ui-chat-message-box-2"]', { timeout: 10000 }).should('exist');
     cy.get('.chat-context').should('be.visible');
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
+
+    chat.getMessage(3).isCompleted();
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-7-context-disabled-during-processing');
