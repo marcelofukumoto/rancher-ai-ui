@@ -126,7 +126,7 @@ describe('Feature: keyboard-shortcuts', () => {
     welcomeMsg.isCompleted();
 
     cy.window().then((win) => {
-      cy.stub(win.navigator.clipboard, 'writeText').as('clipboardWrite');
+      cy.stub(win.navigator.clipboard, 'writeText').as('clipboardWrite').resolves();
     });
 
     cy.enqueueLLMResponse({ text: 'Unique clipboard content from the AI' });
