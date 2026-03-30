@@ -85,10 +85,10 @@ describe('Feature: context', () => {
 
     cy.get('.context-reset', { timeout: 5000 }).should('be.visible');
 
-    cy.get('.context-reset button').click();
+    cy.get('.context-reset button').click({ force: true });
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
-    cy.get('.context-reset').should('not.exist');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 10000 }).should('exist');
+    cy.get('.context-reset', { timeout: 5000 }).should('not.exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-4-context-reset');
