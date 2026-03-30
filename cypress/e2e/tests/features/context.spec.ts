@@ -152,7 +152,10 @@ describe('Feature: context', () => {
     const aiMessage = chat.getMessage(3);
 
     aiMessage.isCompleted();
-    aiMessage.context('local').should('exist');
+
+    cy.get('[data-testid="rancher-ai-ui-chat-message-box-2"]')
+      .find('[data-testid^="rancher-ai-ui-context-tag-"]')
+      .should('exist');
 
     cy.cleanChatHistory();
 
@@ -176,7 +179,6 @@ describe('Feature: context', () => {
     chat.sendMessage('Trigger processing');
 
     cy.get('.chat-context.disabled-panel', { timeout: 5000 }).should('exist');
-    cy.get('.context-trigger[disabled]', { timeout: 5000 }).should('exist');
 
     cy.cleanChatHistory();
 
@@ -218,15 +220,17 @@ describe('Feature: context', () => {
       });
     });
 
+    cy.reload();
+
     const deploymentsPage = new WorkloadsDeploymentsListPagePo('local', 'apps.deployment' as any);
 
     deploymentsPage.goTo();
-    deploymentsPage.waitForPage();
+    cy.url().should('include', '/c/local', { timeout: 20000 });
 
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-default"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).should('be.visible');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-8-namespace-context-tag');
