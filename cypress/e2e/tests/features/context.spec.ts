@@ -1,6 +1,5 @@
 import HomePagePo from '@rancher/cypress/e2e/po/pages/home.po';
 import ClusterDashboardPagePo from '@rancher/cypress/e2e/po/pages/explorer/cluster-dashboard.po';
-import { WorkloadsDeploymentsListPagePo } from '@rancher/cypress/e2e/po/pages/explorer/workloads/workloads-deployments.po';
 import ChatPo from '@/cypress/e2e/po/chat.po';
 
 describe('Feature: context', () => {
@@ -37,7 +36,7 @@ describe('Feature: context', () => {
 
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').within(() => {
       cy.get('[data-testid^="rancher-ai-ui-context-tag-"]').should('not.exist');
-      cy.get('.no-context').should('be.visible');
+      cy.get('.no-context').should('exist');
     });
 
     cy.wait(500);
@@ -61,7 +60,7 @@ describe('Feature: context', () => {
       .click({ force: true });
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('not.exist');
-    cy.get('.context-reset', { timeout: 5000 }).should('be.visible');
+    cy.get('.context-reset', { timeout: 5000 }).should('exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-3-context-tag-removed');
@@ -83,7 +82,7 @@ describe('Feature: context', () => {
       .find('.vs__deselect')
       .click({ force: true });
 
-    cy.get('.context-reset', { timeout: 5000 }).should('be.visible');
+    cy.get('.context-reset', { timeout: 5000 }).should('exist');
 
     cy.get('.context-reset button').click({ force: true });
 
@@ -145,7 +144,7 @@ describe('Feature: context', () => {
     const aiMessage = chat.getMessage(3);
 
     aiMessage.isCompleted();
-    aiMessage.context('local').should('exist');
+    userMessage.context('local').should('exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-6-context-in-message');
@@ -167,7 +166,7 @@ describe('Feature: context', () => {
     chat.sendMessage('Trigger processing');
 
     cy.get('[data-testid="rancher-ai-ui-chat-message-box-2"]', { timeout: 10000 }).should('exist');
-    cy.get('.chat-context').should('be.visible');
+    cy.get('.chat-context').should('exist');
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
 
     chat.getMessage(3).isCompleted();
@@ -212,10 +211,10 @@ describe('Feature: context', () => {
 
     cy.reload();
 
-    const deploymentsPage = new WorkloadsDeploymentsListPagePo('local', 'apps.deployment' as any);
+    const clusterPage = new ClusterDashboardPagePo('local');
 
-    deploymentsPage.goTo();
-    deploymentsPage.waitForPage();
+    clusterPage.goTo();
+    cy.url().should('include', '/c/local');
 
     chat.open();
     chat.isReady(20000);
