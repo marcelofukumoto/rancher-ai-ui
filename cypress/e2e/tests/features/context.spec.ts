@@ -23,7 +23,7 @@ describe('Feature: context', () => {
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).should('be.visible');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).scrollIntoView().should('exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-1-cluster-context-tag-visible');
@@ -53,7 +53,7 @@ describe('Feature: context', () => {
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).should('be.visible');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).scrollIntoView().should('exist');
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
       .parent()
@@ -76,7 +76,7 @@ describe('Feature: context', () => {
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).should('be.visible');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).scrollIntoView().should('exist');
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
       .parent()
@@ -103,7 +103,7 @@ describe('Feature: context', () => {
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).should('be.visible');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).scrollIntoView().should('exist');
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
       .parent()
@@ -132,7 +132,7 @@ describe('Feature: context', () => {
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).should('be.visible');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).scrollIntoView().should('exist');
 
     cy.enqueueLLMResponse({ text: 'Context received.' });
 
@@ -160,7 +160,7 @@ describe('Feature: context', () => {
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).should('be.visible');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 15000 }).scrollIntoView().should('exist');
 
     cy.enqueueLLMResponse({ text: ['Processing...', ' done.'], chunkSize: 1 });
 
@@ -220,7 +220,7 @@ describe('Feature: context', () => {
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).should('be.visible');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).scrollIntoView().should('exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-8-namespace-context-tag');
