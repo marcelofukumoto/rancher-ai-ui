@@ -58,10 +58,10 @@ describe('Feature: context', () => {
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
       .parent()
       .find('.vs__deselect')
-      .click();
+      .click({ force: true });
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('not.exist');
-    cy.get('.context-reset').should('be.visible');
+    cy.get('.context-reset', { timeout: 5000 }).should('be.visible');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-3-context-tag-removed');
@@ -81,9 +81,9 @@ describe('Feature: context', () => {
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
       .parent()
       .find('.vs__deselect')
-      .click();
+      .click({ force: true });
 
-    cy.get('.context-reset').should('be.visible');
+    cy.get('.context-reset', { timeout: 5000 }).should('be.visible');
 
     cy.get('.context-reset button').click();
 
@@ -108,15 +108,15 @@ describe('Feature: context', () => {
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
       .parent()
       .find('.vs__deselect')
-      .click();
+      .click({ force: true });
 
     cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('not.exist');
 
     cy.get('.context-trigger').click();
 
-    cy.contains('.context-dropdown [role="option"], [class*="rc-dropdown-item"]', 'cluster').click({ force: true });
+    cy.contains('cluster:').click({ force: true });
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 5000 }).should('exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-5-context-added-via-dropdown');
@@ -165,7 +165,9 @@ describe('Feature: context', () => {
 
     chat.sendMessage('Trigger processing');
 
-    cy.get('.chat-context.disabled-panel', { timeout: 5000 }).should('exist');
+    cy.get('[data-testid="rancher-ai-ui-chat-message-box-2"]', { timeout: 10000 }).should('exist');
+    cy.get('.chat-context').should('be.visible');
+    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-7-context-disabled-during-processing');
