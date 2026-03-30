@@ -8,10 +8,7 @@ describe('Feature: context', () => {
 
   beforeEach(() => {
     cy.login();
-  });
-
-  afterEach(() => {
-    cy.cleanChatHistory();
+    HomePagePo.goTo();
   });
 
   it('Test 1: Shows cluster context tag on cluster page', () => {
@@ -137,6 +134,8 @@ describe('Feature: context', () => {
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-6-context-in-message');
+
+    cy.cleanChatHistory();
   });
 
   it('Test 7: Context panel is disabled when chat is in processing state', () => {
@@ -156,6 +155,8 @@ describe('Feature: context', () => {
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-7-context-disabled-during-processing');
+
+    cy.cleanChatHistory();
   });
 
   it('Test 8: Shows namespace context when namespace filter is active', () => {
