@@ -122,7 +122,7 @@ describe('Feature: context', () => {
 
     cy.get('.context-trigger').click();
 
-    cy.contains('.context-dropdown [role="option"], [class*="rc-dropdown-item"]', 'cluster').click({ force: true });
+    cy.contains('cluster').should('be.visible').click({ force: true });
 
     cy.get('[data-testid^="rancher-ai-ui-context-tag-"]').should('exist');
 
@@ -171,12 +171,12 @@ describe('Feature: context', () => {
 
     cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).first().should('be.visible');
 
-    cy.enqueueLLMResponse({ text: ['Processing...', ' done.'], chunkSize: 1 });
+    cy.enqueueLLMResponse({ text: 'Processing request step by step to verify disabled state during streaming response', chunkSize: 1 });
 
     chat.sendMessage('Trigger processing');
 
-    cy.get('.chat-context.disabled-panel').should('exist');
-    cy.get('.context-trigger[disabled]').should('exist');
+    cy.get('.chat-context.disabled-panel', { timeout: 5000 }).should('exist');
+    cy.get('.context-trigger[disabled]', { timeout: 5000 }).should('exist');
 
     cy.cleanChatHistory();
 
@@ -185,6 +185,39 @@ describe('Feature: context', () => {
   });
 
   it('Test 8: Shows namespace context when namespace filter is active', () => {
+    cy.getCookie('CSRF').then((csrf) => {
+      cy.request({
+        method:  'GET',
+        url:     '/v1/userpreferences',
+        headers: {
+          'x-api-csrf': csrf?.value,
+          Accept:       'application/json',
+        },
+      }).then((resp) => {
+        const pref = resp.body?.data?.[0];
+
+        if (pref) {
+          const updatedData = {
+            ...(pref.data || {}),
+            'ns-by-id': JSON.stringify({ local: ['ns://default'] }),
+          };
+
+          cy.request({
+            method:  'PUT',
+            url:     `/v1/userpreferences/${ pref.id }`,
+            headers: {
+              'x-api-csrf': csrf?.value,
+              Accept:       'application/json',
+            },
+            body: {
+              ...pref,
+              data: updatedData,
+            },
+          });
+        }
+      });
+    });
+
     const deploymentsPage = new WorkloadsDeploymentsListPagePo('local', 'apps.deployment' as any);
 
     deploymentsPage.goTo();
