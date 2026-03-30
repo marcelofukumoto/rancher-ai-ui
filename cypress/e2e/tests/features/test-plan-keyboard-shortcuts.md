@@ -139,7 +139,7 @@
 **Selectors:**
 - `[data-testid="rancher-ai-ui-chat-container"]`
 - `[data-testid="card"].prompt-remove` — delete confirmation dialog (via `DeleteChatPromptPo`)
-- `#prompt-remove-confirm-button` — confirm button inside dialog
+- `[data-testid="prompt-remove-confirm-button"]` — confirm button inside dialog
 
 **Screenshot:** `keyboard-shortcuts-test-4-delete-chat`
 
