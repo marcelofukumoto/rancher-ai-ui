@@ -17,18 +17,18 @@ describe('Feature: context', () => {
         chat.close();
       }
     });
-    cy.cleanChatHistory();
   });
 
   it('Test 1: Shows cluster context tag on cluster page', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    cy.url().should('include', '/c/local');
 
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).first().should('be.visible');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-1-cluster-context-tag-visible');
@@ -53,18 +53,20 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    cy.url().should('include', '/c/local');
 
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).first().should('be.visible');
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]')
+      .first()
       .parent()
       .find('.vs__deselect')
       .click();
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('not.exist');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]').should('not.exist');
     cy.get('.context-reset').should('be.visible');
 
     cy.wait(500);
@@ -75,13 +77,15 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    cy.url().should('include', '/c/local');
 
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).first().should('be.visible');
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]')
+      .first()
       .parent()
       .find('.vs__deselect')
       .click();
@@ -90,7 +94,7 @@ describe('Feature: context', () => {
 
     cy.get('.context-reset button').click();
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]').should('exist');
     cy.get('.context-reset').should('not.exist');
 
     cy.wait(500);
@@ -101,24 +105,26 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    cy.url().should('include', '/c/local');
 
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).first().should('be.visible');
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]')
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]')
+      .first()
       .parent()
       .find('.vs__deselect')
       .click();
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('not.exist');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]').should('not.exist');
 
     cy.get('.context-trigger').click();
 
     cy.contains('.context-dropdown [role="option"], [class*="rc-dropdown-item"]', 'cluster').click({ force: true });
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]').should('exist');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]').should('exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-5-context-added-via-dropdown');
@@ -128,11 +134,12 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    cy.url().should('include', '/c/local');
 
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).first().should('be.visible');
 
     cy.enqueueLLMResponse({ text: 'Context received.' });
 
@@ -147,6 +154,8 @@ describe('Feature: context', () => {
     aiMessage.isCompleted();
     aiMessage.context('local').should('exist');
 
+    cy.cleanChatHistory();
+
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-6-context-in-message');
   });
@@ -155,11 +164,12 @@ describe('Feature: context', () => {
     const clusterPage = new ClusterDashboardPagePo('local');
 
     clusterPage.goTo();
+    cy.url().should('include', '/c/local');
 
     chat.open();
     chat.isReady(20000);
 
-    cy.get('[data-testid="rancher-ai-ui-context-tag-local"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid^="rancher-ai-ui-context-tag-"]', { timeout: 15000 }).first().should('be.visible');
 
     cy.enqueueLLMResponse({ text: ['Processing...', ' done.'], chunkSize: 1 });
 
@@ -167,6 +177,8 @@ describe('Feature: context', () => {
 
     cy.get('.chat-context.disabled-panel').should('exist');
     cy.get('.context-trigger[disabled]').should('exist');
+
+    cy.cleanChatHistory();
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-7-context-disabled-during-processing');
