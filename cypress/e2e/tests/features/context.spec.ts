@@ -15,7 +15,9 @@ describe('Feature: context', () => {
   });
 
   it('Test 1: Shows cluster context tag on cluster page', () => {
-    ClusterDashboardPagePo.goTo('local');
+    const clusterPage = new ClusterDashboardPagePo('local');
+
+    clusterPage.goTo();
 
     chat.open();
     chat.isReady();
@@ -42,7 +44,9 @@ describe('Feature: context', () => {
   });
 
   it('Test 3: Removes a context tag via deselect button', () => {
-    ClusterDashboardPagePo.goTo('local');
+    const clusterPage = new ClusterDashboardPagePo('local');
+
+    clusterPage.goTo();
 
     chat.open();
     chat.isReady();
@@ -62,7 +66,9 @@ describe('Feature: context', () => {
   });
 
   it('Test 4: Resets context to restore all tags', () => {
-    ClusterDashboardPagePo.goTo('local');
+    const clusterPage = new ClusterDashboardPagePo('local');
+
+    clusterPage.goTo();
 
     chat.open();
     chat.isReady();
@@ -84,7 +90,9 @@ describe('Feature: context', () => {
   });
 
   it('Test 5: Adds a context item via dropdown re-adds the tag', () => {
-    ClusterDashboardPagePo.goTo('local');
+    const clusterPage = new ClusterDashboardPagePo('local');
+
+    clusterPage.goTo();
 
     chat.open();
     chat.isReady();
@@ -107,7 +115,9 @@ describe('Feature: context', () => {
   });
 
   it('Test 6: Context tag is included in the sent message\'s metadata', () => {
-    ClusterDashboardPagePo.goTo('local');
+    const clusterPage = new ClusterDashboardPagePo('local');
+
+    clusterPage.goTo();
 
     chat.open();
     chat.isReady();
@@ -130,7 +140,9 @@ describe('Feature: context', () => {
   });
 
   it('Test 7: Context panel is disabled when chat is in processing state', () => {
-    ClusterDashboardPagePo.goTo('local');
+    const clusterPage = new ClusterDashboardPagePo('local');
+
+    clusterPage.goTo();
 
     chat.open();
     chat.isReady();
