@@ -9,23 +9,20 @@ describe('Feature: keyboard-shortcuts', () => {
   const chat = new ChatPo();
   const isMac = Cypress.platform === 'darwin';
 
-  before(() => {
-    cy.cleanChatHistory();
-  });
-
   beforeEach(() => {
     cy.login();
     HomePagePo.goTo();
   });
 
   afterEach(() => {
+    cy.cleanChatHistory();
     cy.clearLLMResponses();
   });
 
   it('Test 1: Open and close chat panel via Alt+K global shortcut', () => {
     chat.isClosed();
 
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    cy.get('body').type(isMac ? '{meta}{shift}k' : '{alt}k');
 
     chat.isOpen();
     chat.isReady();
@@ -33,7 +30,7 @@ describe('Feature: keyboard-shortcuts', () => {
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('keyboard-shortcuts-test-1-open-close-chat');
 
-    cy.get('body').type(isMac ? '{meta+shift+k}' : '{alt+k}');
+    cy.get('body').type(isMac ? '{meta}{shift}k' : '{alt}k');
 
     chat.isClosed();
   });
@@ -53,7 +50,7 @@ describe('Feature: keyboard-shortcuts', () => {
 
     aiResponse.isCompleted();
 
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl+shift+o}');
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl}{shift}o');
 
     const newWelcomeMsg = chat.getMessage(1);
 
@@ -73,12 +70,12 @@ describe('Feature: keyboard-shortcuts', () => {
 
     cy.get('[data-testid="rancher-ai-ui-chat-history-panel"]').should('not.exist');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl+shift+s}');
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl}{shift}s');
     cy.wait(500);
 
     cy.get('[data-testid="rancher-ai-ui-chat-history-panel"]').should('exist');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl+shift+s}');
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl}{shift}s');
     cy.wait(500);
 
     cy.get('[data-testid="rancher-ai-ui-chat-history-panel"]').should('not.exist');
@@ -102,7 +99,7 @@ describe('Feature: keyboard-shortcuts', () => {
 
     aiResponse.isCompleted();
 
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl+shift+backspace}');
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl}{shift}{backspace}');
 
     const deletePrompt = new DeleteChatPromptPo();
 
@@ -139,7 +136,7 @@ describe('Feature: keyboard-shortcuts', () => {
 
     aiResponse.isCompleted();
 
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl+shift+c}');
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl}{shift}c');
 
     cy.get('@clipboardWrite').should('have.been.calledWith', 'Unique clipboard content from the AI');
 
@@ -177,12 +174,12 @@ describe('Feature: keyboard-shortcuts', () => {
 
     welcomeMsg.isCompleted();
 
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl+shift+o}');
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl}{shift}o');
 
     cy.get('[data-testid="rancher-ai-ui-chat-message-box-1"]').should('exist');
     cy.get('[data-testid="rancher-ai-ui-chat-message-box-2"]').should('not.exist');
 
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl+shift+backspace}');
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').type('{ctrl}{shift}{backspace}');
 
     cy.get('[data-testid="card"].prompt-remove').should('not.exist');
 
