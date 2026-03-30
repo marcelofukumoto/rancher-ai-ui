@@ -178,12 +178,12 @@ describe('Feature: context', () => {
 
     chat.sendMessage('Trigger processing');
 
-    cy.get('.chat-context.disabled-panel', { timeout: 5000 }).should('exist');
-
-    cy.cleanChatHistory();
+    cy.get('[data-testid^="rancher-ai-ui-processing-phase-"]', { timeout: 5000 }).should('exist');
 
     cy.wait(500);
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('context-test-7-context-disabled-during-processing');
+
+    cy.cleanChatHistory();
   });
 
   it('Test 8: Shows namespace context when namespace filter is active', () => {
