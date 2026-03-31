@@ -17,6 +17,17 @@
 - `.disclaimer-section-title` → `components/console/VerifyResultsDisclaimer.vue` (line 65)
 - `.tab-label-box` → `components/panels/Console.vue` (confirmed exists in template)
 
+### Verified Selectors (chat-panel-menu feature area)
+- `.chat-console-menu-container` → `components/header/ChatPanelMenu.vue` (wrapper div for the ⋮ menu)
+- `.chat-console-menu-container button` → `components/header/ChatPanelMenu.vue` (`rc-dropdown-trigger` renders as `<button>` inside wrapper)
+- `.shortcuts` → `components/header/KeyboardShortcuts.vue` (content wrapper div)
+- `.shortcuts-title` → `components/header/KeyboardShortcuts.vue` (spans "Keyboard Shortcuts")
+- `.shortcuts-row` → `components/header/KeyboardShortcuts.vue` (each shortcut entry row)
+- `.shortcuts-action` → `components/header/KeyboardShortcuts.vue` (action label span)
+- `.shortcuts-key` → `components/header/KeyboardShortcuts.vue` (`<kbd class="shortcuts-key">` element)
+- **NOTE**: `rancher-ai-ui-chat-menu-button` (from quick reference) does NOT exist in source — use CSS selectors instead
+- `Header.vue` does NOT pass `disabled` prop to `ChatPanelMenu`, so menu is always enabled regardless of chat state
+
 ### Verified Selectors (message-bubble-actions feature area)
 - `.chat-msg-bubble` → `components/message/index.vue` (class on bubble div)
 - `.chat-msg-bubble-actions` → `components/message/index.vue` (v-if="!props.disabled"; CSS opacity:0 by default, 1 on :hover)
@@ -38,6 +49,7 @@
 |---|---|
 | `console` | `components/panels/Console.vue`, `components/console/LlmModelLabel.vue`, `components/console/VerifyResultsDisclaimer.vue`, `components/popover/TextLabel.vue`, `composables/useInputComposable.ts` |
 | `message-bubble-actions` | `components/message/index.vue`, `components/message/BubbleButton.vue`, `composables/useInputComposable.ts`, `cypress/e2e/po/message.po.ts` |
+| `chat-panel-menu` | `components/header/ChatPanelMenu.vue`, `components/panels/Header.vue`, `components/header/KeyboardShortcuts.vue`, `components/popover/TextLabel.vue`, `pages/Chat.vue`, `composables/useChatMessageComposable.ts` |
 
 ## Message ID Behavior
 - Message IDs come from `store/chat.ts` — `msgIdCnt` starts at `0`, incremented with `++msgIdCnt` per message
@@ -68,7 +80,15 @@ For `message-bubble-actions` feature area:
 - Test disabled state: `.chat-msg-bubble-actions` completely absent from DOM when panel disabled (v-if, not CSS)
 - Use `trigger('mouseenter', { force: true })` on `.chat-msg-bubble` to simulate hover; use `{ force: true }` on clicks since buttons start at opacity:0/pointer-events:none
 
-## Mock Service API (Verified)
+For `chat-panel-menu` feature area:
+- Always verify menu button selector via CSS: `.chat-console-menu-container button` (NOT `rancher-ai-ui-chat-menu-button` which does not exist)
+- Test all three menu options: Download Messages, View Keyboard Shortcuts, Edit Configuration
+- For download test: stub `window.URL.createObjectURL` BEFORE clicking menu
+- For shortcuts overlay: verify with `.shortcuts-title`, `.shortcuts-row` count, and text content
+- All 6 shortcut entries must be verified by text (verified against `en-us.yaml`)
+- For outside-click dismiss test: use `cy.get('[data-testid="rancher-ai-ui-chat-container"]').click(10, 200)` NOT the close button
+
+
 - Enqueue: `POST ${llmMockServiceProxyPath}/v1/control/push` body: `{ agent, text: { chunks: [...] } }` — verified in `cypress/support/commands/llm-mock-service-api.ts`
 - Clear: `POST ${llmMockServiceProxyPath}/v1/control/clear` — verified in same file
 - The mock-agent (port 8000) is **deprecated**; use llm-mock service via Rancher proxy
@@ -88,8 +108,10 @@ For `message-bubble-actions` feature area:
 - Don't forget `{ force: true }` for `{tab}` keypress in textarea
 - Don't use the disclaimer trigger text "Verify results" alone — the actual text is "Verify the results." (include "the" and period or use partial match)
 - Don't assert `chat.getMessage(N).content()` to check thinking visibility — `content()` returns only `rancher-ai-ui-chat-message-formatted-content` (never contains thinking text); use `containsText()` or `cy.contains()` scoped to the message box instead
+- Don't use `rancher-ai-ui-chat-menu-button` data-testid — this does NOT exist in source despite being listed in the quick reference; use `.chat-console-menu-container button` instead
+- Don't use close button (`rancher-ai-ui-chat-close-button`) as an outside-click target for dropdown dismiss tests — it will close the entire chat panel; use `.chat-container.click(10, 200)` instead
 
-## Verification History
+
 
 ### PR #16 — console (2026-03-31, Run 23813233811)
 - **Verdict**: APPROVED (9/9 checks passed)
@@ -103,14 +125,6 @@ For `message-bubble-actions` feature area:
 - **Test 7 failure**: Plan asserted `.disabled-panel` present during streaming (`GeneratingResponse` phase) — but `Chat.vue` `disabled` computed does NOT include this phase. Console intentionally stays active during streaming.
 - Dispatched plan-fixer attempt 2 to revise Test 7
 
-### PR #16 — console (2026-03-31, Run 23818182447) — APPROVED (Attempt 2)
-- **Verdict**: APPROVED (all checks passed)
-- Plan-fixer correctly revised Test 7: now asserts `.disabled-panel` is NOT present during streaming
-- Test 7 title changed from "Console is disabled while processing" to "Console remains active while streaming"
-- All other 8 test cases unchanged and structurally correct
-- Minor note: Test 9 trigger text "Verify results" still present (won't substring-match "Verify the results."); fallback instruction provided but `.textlabel-popper .inline-button` would be more reliable
-- Dispatched e2e-mcp-automation-runner attempt 1
-
 ### PR #19 — message-bubble-actions (2026-03-31, Run 23814738991)
 - **Verdict**: APPROVED (9/9 checks passed)
 - All 9 test cases well-structured with all required fields
@@ -119,3 +133,12 @@ For `message-bubble-actions` feature area:
 - Plan correctly uses `chunkSize: 1` for Test 9 (disabled state timing)
 - Plan correctly documents message ID sequences for each test
 - Minor observation: Test 7 "before" assertion `content()` doesn't contain thinking text is trivially true (content() only returns formatted-message-content, not thinking span); spec writer should use `cy.contains('...').should('not.exist')` for a stronger pre-condition check
+
+### PR #21 — chat-panel-menu (2026-03-31, Run 23817912811)
+- **Verdict**: APPROVED (all checks passed)
+- All 9 test cases well-structured with all required fields
+- All CSS selectors verified against source components; plan correctly identifies `rancher-ai-ui-chat-menu-button` does NOT exist and uses CSS selector instead
+- i18n label texts verified: menu options and all 6 keyboard shortcut entries
+- Plan correctly notes `Header.vue` does NOT pass `disabled` to `ChatPanelMenu`
+- Test 4 stub ordering correct; Test 9 Implementation Notes clarify to use container click (not close button) for outside-click dismiss
+
