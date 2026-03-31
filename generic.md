@@ -67,3 +67,27 @@ See e2e-generic.learning.md for full learnings.
 
 ### Notes on New Test (#9 — disclaimer popover)
 - `opens the verify results disclaimer popover` passed cleanly — no special handling needed beyond standard Cypress click + visibility assertions
+
+---
+
+## MCP Playwright Runner — Tool Allowlist Issue (PR #16, Attempt 1, 2026-03-31)
+
+### Root Cause
+- Workflow run had Playwright MCP tools NOT in the tool allowlist
+- `/tmp/awf-cmd-1.sh` contained `--allow-tool github --allow-tool safeoutputs --allow-tool 'shell(...)'` but **no `--allow-tool playwright-*`**
+- All Playwright MCP tool calls return: `Permission denied and could not request permission from user`
+- `curl` (needed for mock setup) was also blocked for network access to localhost
+
+### Diagnosis Steps
+- Check `/tmp/awf-cmd-1.sh` to verify which tools are allowed
+- Look for `--allow-tool playwright` or `--allow-tool playwright-*` in the startup command
+- The `allowed_domains` in `aw_info.json` includes "playwright" but this is about NETWORK/firewall access (the MCP server IS reachable), not tool call permissions
+
+### Pattern
+- `allowed_domains: ["playwright"]` = playwright MCP server is reachable via firewall
+- `--allow-tool playwright` (in awf-cmd-1.sh) = required for actual tool calls to succeed
+- If the runner runs again without `--allow-tool playwright`, all tests will fail again
+
+### Mitigation
+- If Playwright tools are denied, dispatch plan verifier (attempt + 1) immediately
+- The plan verifier should trigger a new runner with proper tool configuration
