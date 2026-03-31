@@ -17,11 +17,6 @@
 - `.disclaimer-section-title` → `components/console/VerifyResultsDisclaimer.vue` (line 65)
 - `.tab-label-box` → `components/panels/Console.vue` (confirmed exists in template)
 
-### Verified Selectors (message-suggestions feature area)
-- `rancher-ai-ui-chat-message-suggestion-{index}` → `components/message/Suggestions.vue` line 43 (`:data-testid="\`rancher-ai-ui-chat-message-suggestion-${index}\`"` on RcButton inside `v-for`)
-- `MessageActionSuggestion` type → `types.ts:166` — it is a `type MessageActionSuggestion = string` alias (plain string)
-- `MessagePo.suggestion(index)` → `cypress/e2e/po/message.po.ts` lines 23-24 (uses `this.self().get(...)` which is DOM-wide, not scoped to parent)
-
 ### Verified Selectors (message-bubble-actions feature area)
 - `.chat-msg-bubble` → `components/message/index.vue` (class on bubble div)
 - `.chat-msg-bubble-actions` → `components/message/index.vue` (v-if="!props.disabled"; CSS opacity:0 by default, 1 on :hover)
@@ -65,16 +60,6 @@ For `console` feature area:
 - Test disabled state during AI processing (use small `chunkSize: 1` for reliable timing)
 - Test visual elements: LLM model label visibility, disclaimer popover
 
-For `message-suggestions` feature area:
-- Always test: chips visible with correct text, click sends as user message, AI responds after click
-- Test index-specific selectors: verify `suggestion(0)` AND `suggestion(1)` send different texts
-- Test textarea remains empty after suggestion click (direct emit bypasses input)
-- Test disabled state with `chunkSize: 1` + `cy.wait(300)` — use `should('be.disabled')` not `have.attr disabled`
-- Test absence of chips when no `<suggestion>` tags in response
-- Test mid-conversation messages (not just welcome) also support suggestion chips
-- No `{ force: true }` needed for suggestion clicks — chips are visible by default
-- `MessagePo.suggestion(index).should('not.exist')` works for absence checks (global DOM search still fine when no suggestions in test)
-
 For `message-bubble-actions` feature area:
 - Always test copy icon toggle (icon-copy → icon-checkmark → icon-copy after 1 sec timeout)
 - Always test resend button presence on user messages AND absence on AI messages
@@ -111,13 +96,11 @@ For `message-bubble-actions` feature area:
 - Plan correctly follows all anti-patterns from learnings (ghost text overlay, chunkSize 1, message ID docs)
 - Minor note: Test 9 disclaimer trigger uses "Verify results" partial text match — `.textlabel-popper .inline-button` is more reliable alternative if text match fails
 
-### PR #20 — message-suggestions (2026-03-31, Run 23815611252)
+### PR #19 — message-bubble-actions (2026-03-31, Run 23814738991)
 - **Verdict**: APPROVED (9/9 checks passed)
-- All 8 test cases well-structured with all required fields
-- All selectors verified: `rancher-ai-ui-chat-message-suggestion-{index}` in Suggestions.vue, `rancher-ai-ui-chat-message-box-{id}` in Messages.vue
-- `MessageActionSuggestion` is a plain string type alias — suggestion text is always a string
-- Plan correctly uses `chunkSize: 1` + `cy.wait(300)` for Test 6 disabled-state timing
-- Plan correctly documents that no `{ force: true }` needed (chips visible by default unlike bubble-action buttons)
-- Plan correctly covers mid-conversation suggestions (Test 8) not just welcome message
-- `MessagePo.suggestion()` uses DOM-wide `self().get()` — spec writer should use message-scoped assertions carefully; in practice fine since only one message has suggestions per test
-
+- All 9 test cases well-structured with all required fields
+- All 10 selectors verified against source components (mix of data-testid and CSS class selectors)
+- Plan correctly uses `trigger('mouseenter', { force: true })` for CSS-only hover reveal
+- Plan correctly uses `chunkSize: 1` for Test 9 (disabled state timing)
+- Plan correctly documents message ID sequences for each test
+- Minor observation: Test 7 "before" assertion `content()` doesn't contain thinking text is trivially true (content() only returns formatted-message-content, not thinking span); spec writer should use `cy.contains('...').should('not.exist')` for a stronger pre-condition check
