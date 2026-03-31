@@ -15,6 +15,7 @@
 - `.disabled-panel` → `components/panels/Console.vue` (lines ~244, ~282; applied when `props.disabled` is true)
 - `.disclaimer` → `components/console/VerifyResultsDisclaimer.vue` (line 22)
 - `.disclaimer-section-title` → `components/console/VerifyResultsDisclaimer.vue` (line 65)
+- `.tab-label-box` → `components/panels/Console.vue` (confirmed exists in template)
 
 ### CSS Selectors (no data-testid available)
 - `.llm-model-label` → `components/console/LlmModelLabel.vue`
@@ -47,6 +48,16 @@ For `console` feature area:
 - Test disabled state during AI processing (use small `chunkSize: 1` for reliable timing)
 - Test visual elements: LLM model label visibility, disclaimer popover
 
+## Mock Service API (Verified)
+- Enqueue: `POST ${llmMockServiceProxyPath}/v1/control/push` body: `{ agent, text: { chunks: [...] } }` — verified in `cypress/support/commands/llm-mock-service-api.ts`
+- Clear: `POST ${llmMockServiceProxyPath}/v1/control/clear` — verified in same file
+- The mock-agent (port 8000) is **deprecated**; use llm-mock service via Rancher proxy
+- Quick reference says `http://localhost:1080/mockserver/expectation` — do NOT use; correct API is via Rancher proxy path with `/v1/control/push`
+
+## Disclaimer Trigger
+- The "Verify results" trigger label text is actually **"Verify the results."** (with "the" and period) — from `l10n/en-us.yaml` key `ai.configurations.verifyResults.button.label`
+- Trigger element is `.textlabel-popper .inline-button` inside the console info bar
+
 ## Anti-Patterns
 
 - Don't use `chunkSize: 5` or higher for "disabled while processing" tests — use `chunkSize: 1` with long text for reliable timing
@@ -54,3 +65,4 @@ For `console` feature area:
 - Don't hardcode message IDs without documenting the full message sequence in preconditions
 - Avoid `.v-popper__inner` as the primary popover selector — prefer component-specific classes like `.disclaimer`
 - Don't forget `{ force: true }` for `{tab}` keypress in textarea
+- Don't use the disclaimer trigger text "Verify results" alone — the actual text is "Verify the results." (include "the" and period or use partial match)
