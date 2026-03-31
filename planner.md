@@ -66,3 +66,12 @@ For `console` feature area:
 - Avoid `.v-popper__inner` as the primary popover selector — prefer component-specific classes like `.disclaimer`
 - Don't forget `{ force: true }` for `{tab}` keypress in textarea
 - Don't use the disclaimer trigger text "Verify results" alone — the actual text is "Verify the results." (include "the" and period or use partial match)
+
+## Verification History
+
+### PR #16 — console (2026-03-31, Run 23813233811)
+- **Verdict**: APPROVED (9/9 checks passed)
+- All 9 test cases well-structured with name/description/preconditions/steps/assertions/selectors/screenshot
+- All 12 selectors verified against source components
+- Plan correctly follows all anti-patterns from learnings (ghost text overlay, chunkSize 1, message ID docs)
+- Minor note: Test 9 disclaimer trigger uses "Verify results" partial text match — `.textlabel-popper .inline-button` is more reliable alternative if text match fails
