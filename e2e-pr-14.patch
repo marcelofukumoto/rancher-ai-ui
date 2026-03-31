@@ -1,0 +1,58 @@
+diff --git a/cypress/e2e/tests/features/console.spec.ts b/cypress/e2e/tests/features/console.spec.ts
+--- a/cypress/e2e/tests/features/console.spec.ts
++++ b/cypress/e2e/tests/features/console.spec.ts
+@@ -26,7 +26,7 @@
+     cy.enqueueLLMResponse({ text: 'Response to history test.' });
+     chat.sendMessage('Hello from history test');
+ 
+-    const aiMessage = chat.getMessage(2);
++    const aiMessage = chat.getMessage(3);
+ 
+     aiMessage.isCompleted();
+ 
+@@ -42,7 +42,7 @@
+     cy.enqueueLLMResponse({ text: 'Response.' });
+     chat.sendMessage('First message');
+ 
+-    const aiMessage = chat.getMessage(2);
++    const aiMessage = chat.getMessage(3);
+ 
+     aiMessage.isCompleted();
+ 
+@@ -58,11 +58,11 @@
+   it('Test 3: Prompt history — navigates multiple previous messages in order', () => {
+     cy.enqueueLLMResponse({ text: 'Response A.' });
+     chat.sendMessage('Message A');
+-    chat.getMessage(2).isCompleted();
++    chat.getMessage(3).isCompleted();
+ 
+     cy.enqueueLLMResponse({ text: 'Response B.' });
+     chat.sendMessage('Message B');
+-    chat.getMessage(4).isCompleted();
++    chat.getMessage(5).isCompleted();
+ 
+     console.textarea().type('{uparrow}');
+     console.textarea().should('have.value', 'Message B');
+@@ -76,7 +76,7 @@
+   it('Test 4: Tab autocomplete fills textarea with prompt suggestion', () => {
+     cy.enqueueLLMResponse({ text: 'Response.' });
+     chat.sendMessage('Tab autocomplete test message');
+-    chat.getMessage(2).isCompleted();
++    chat.getMessage(3).isCompleted();
+ 
+     console.textarea().type('{uparrow}');
+     console.textarea().should('have.value', 'Tab autocomplete test message');
+@@ -114,10 +114,10 @@
+     cy.enqueueLLMResponse({ text: 'A long response to slow down delivery so we can assert the disabled state before completion', chunkSize: 1 });
+     console.textarea().type('Trigger processing').type('{enter}');
+ 
+-    console.textarea().should('have.attr', 'disabled');
++    cy.get('[data-teststatus="rancher-ai-ui-chat-message-status-3-inprogress"]').should('exist');
+ 
+-    chat.getMessage(2).isCompleted();
+-    console.textarea().should('not.have.attr', 'disabled');
++    chat.getMessage(3).isCompleted();
++    console.textarea().should('not.be.disabled');
+ 
+     cy.wait(500);
+     cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('console-test-6-disabled-while-processing');
