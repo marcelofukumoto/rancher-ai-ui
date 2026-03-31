@@ -140,3 +140,29 @@ await page.goto('https://localhost:8005', { waitUntil: 'domcontentloaded' });
 ### Mitigation
 - If Playwright tools are denied, dispatch plan verifier (attempt + 1) immediately
 - The plan verifier should trigger a new runner with proper tool configuration
+
+---
+
+## chat-panel-menu Feature — ALL 9 TESTS PASSED (PR #21, Attempt 2, 2026-03-31)
+
+### Summary
+- All 9 tests in `chat-panel-menu.spec.ts` passed on Attempt 2
+- Tests cover: menu button visibility, dropdown open/close, dropdown options, download action, keyboard shortcuts overlay, settings navigation, and close-on-outside-click behavior
+
+### Test Coverage (confirmed working)
+1. Menu button is visible in chat header
+2. Clicking the menu button opens the dropdown
+3. Dropdown shows all three expected options
+4. Download Messages triggers a file download
+5. View Keyboard Shortcuts opens the shortcuts overlay
+6. Shortcuts overlay displays all expected keyboard shortcut entries
+7. Edit Configuration navigates to the settings page
+8. Dropdown closes after selecting an option
+9. Dropdown closes when clicking outside
+
+### Notes
+- No special handling or retries were needed — all tests passed cleanly
+- Test durations ranged from ~2.5s to ~9s (total spec: 35s for 9 tests)
+- Attempt 1 presumably needed fixes; Attempt 2 passed fully
+- Each test had a corresponding screenshot captured automatically
+
