@@ -55,3 +55,15 @@ See e2e-generic.learning.md for full learnings.
 - Do NOT call `.isCompleted()` as a prerequisite before checking disabled — the AI may never complete in the mock
 - Alternatively, increase the timeout or use `cy.get(..., { timeout: 20000 })` for `status-3-completed`
 - If the mock agent does not emit completion, the test structure must be revised to NOT depend on it
+
+---
+
+## console Feature — ALL 9 TESTS PASSED (PR #15, Attempt 2, 2026-03-31)
+
+### Summary
+- All 9 tests in `console.spec.ts` passed on Attempt 2
+- This confirms the fixes from previous attempts (keyboard trigger events, message index pattern, disabled state checking) are stable and correct
+- New test added: "opens the verify results disclaimer popover" — passed on first attempt, no issues
+
+### Notes on New Test (#9 — disclaimer popover)
+- `opens the verify results disclaimer popover` passed cleanly — no special handling needed beyond standard Cypress click + visibility assertions
