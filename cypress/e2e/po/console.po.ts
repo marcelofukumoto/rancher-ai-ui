@@ -41,6 +41,26 @@ export class ConsolePo extends ComponentPo {
     return this.self().get('textarea[data-testid="rancher-ai-ui-chat-input-textarea"]');
   }
 
+  sendButton() {
+    return this.self().find('.send-button');
+  }
+
+  recalledTextOverlay() {
+    return cy.get('.chat-input-complete .text');
+  }
+
+  llmModelLabel() {
+    return cy.get('.llm-model-label');
+  }
+
+  disclaimerButton() {
+    return cy.get('.textlabel-popper .inline-button').first();
+  }
+
+  disclaimerPopover() {
+    return cy.get('.disclaimer');
+  }
+
   selectAgent() {
     return new SelectAgentPo();
   }
