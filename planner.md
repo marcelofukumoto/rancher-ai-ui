@@ -209,3 +209,9 @@ For `history-panel` feature area:
 - `rancher-ai-ui-chat-message-confirmation-cancel-button` → `components/message/Confirmation.vue`
 - `rancher-ai-ui-chat-message-confirmation-confirmed` → `components/message/Confirmation.vue`
 - `rancher-ai-ui-chat-message-confirmation-canceled` → `components/message/Confirmation.vue`
+
+### PR #23 — tool-confirmation (2026-03-31, Run 23824651850)
+- **Verdict**: APPROVED (re-verification #2, all checks passed)
+- Same plan as prior run (23823893066); all 12 selectors re-verified against source
+- All 8 test cases well-structured with all required fields
+- Runner dispatched (attempt 1)
