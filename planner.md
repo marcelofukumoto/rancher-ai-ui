@@ -12,7 +12,7 @@
 - `.send-button` → `components/panels/Console.vue` (line ~285, inside `.chat-input-complete` wrapper)
 - `.chat-input-complete` → `components/panels/Console.vue` (line ~249, wraps overlay + send button)
 - `.chat-input-complete .text` → `components/panels/Console.vue` (line ~251, `<div class="text">` inside `.chat-input-complete`)
-- `.disabled-panel` → `components/panels/Console.vue` (lines ~244, ~282; applied when `props.disabled` is true)
+- `.disabled-panel` → `components/panels/Console.vue` (lines ~244, ~282; applied when `props.disabled` is true — see CRITICAL note below)
 - `.disclaimer` → `components/console/VerifyResultsDisclaimer.vue` (line 22)
 - `.disclaimer-section-title` → `components/console/VerifyResultsDisclaimer.vue` (line 65)
 - `.tab-label-box` → `components/panels/Console.vue` (confirmed exists in template)
@@ -57,7 +57,8 @@ For `console` feature area:
 - Always test prompt history: up arrow recall, down arrow clear, multi-message navigation
 - Always test tab autocomplete (requires `{ force: true }`)
 - Test send behavior: Enter to send, Shift+Enter for newline
-- Test disabled state during AI processing (use small `chunkSize: 1` for reliable timing)
+- **CRITICAL**: Do NOT test `.disabled-panel` during `GeneratingResponse` (streaming) phase — `Chat.vue`'s `disabled` computed does NOT include `MessagePhase.GeneratingResponse`. The console is intentionally kept active during streaming. `.disabled-panel` is only applied when: service is not Active, systemErrors exist, or phase is `AwaitingConfirmation`.
+- If testing disabled state, test the `AwaitingConfirmation` phase (tool confirmation flow) instead of streaming, OR verify the console remains ACTIVE during streaming
 - Test visual elements: LLM model label visibility, disclaimer popover
 
 For `message-bubble-actions` feature area:
@@ -80,6 +81,7 @@ For `message-bubble-actions` feature area:
 ## Anti-Patterns
 
 - Don't use `chunkSize: 5` or higher for "disabled while processing" tests — use `chunkSize: 1` with long text for reliable timing
+- **CRITICAL**: Do NOT assert `.disabled-panel` is present during `GeneratingResponse` (streaming) phase — the console is NOT disabled during streaming (confirmed by actual test execution run 23815581191). `Chat.vue` `disabled` only activates for `AwaitingConfirmation`, systemErrors, or non-Active service state
 - Don't describe `{uparrow}` as changing the textarea value — it fills `.chat-input-complete .text` overlay
 - Don't hardcode message IDs without documenting the full message sequence in preconditions
 - Avoid `.v-popper__inner` as the primary popover selector — prefer component-specific classes like `.disclaimer`
@@ -95,6 +97,11 @@ For `message-bubble-actions` feature area:
 - All 12 selectors verified against source components
 - Plan correctly follows all anti-patterns from learnings (ghost text overlay, chunkSize 1, message ID docs)
 - Minor note: Test 9 disclaimer trigger uses "Verify results" partial text match — `.textlabel-popper .inline-button` is more reliable alternative if text match fails
+
+### PR #16 — console (2026-03-31, Run 23816536920) — NEEDS_FIX
+- **Verdict**: NEEDS_FIX (Test 7 incorrect assertions confirmed by actual execution)
+- **Test 7 failure**: Plan asserted `.disabled-panel` present during streaming (`GeneratingResponse` phase) — but `Chat.vue` `disabled` computed does NOT include this phase. Console intentionally stays active during streaming.
+- Dispatched plan-fixer attempt 2 to revise Test 7
 
 ### PR #19 — message-bubble-actions (2026-03-31, Run 23814738991)
 - **Verdict**: APPROVED (9/9 checks passed)
