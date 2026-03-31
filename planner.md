@@ -191,3 +191,21 @@ For `history-panel` feature area:
 - **Verdict**: APPROVED (re-verification #3, all checks passed)
 - Same plan as prior runs; all 15 selectors re-verified against source
 - Runner dispatched (attempt 1)
+
+### PR #23 — tool-confirmation (2026-03-31, Run 23823893066)
+- **Verdict**: APPROVED (9/9 checks passed)
+- All 8 test cases well-structured with all required fields (name/description/preconditions/steps/assertions/selectors/screenshot)
+- All 12 selectors verified against source components (`Confirmation.vue`, `Console.vue`, `Messages.vue`, `Chat.vue`)
+- Confirmation dialog selectors all exist in `components/message/Confirmation.vue` with correct data-testid attributes
+- Plan correctly identifies that `disabled` computed in `Chat.vue` includes `AwaitingConfirmation` phase (Tests 3 is valid)
+- Plan correctly identifies that confirmation buttons are removed via `v-if` (not CSS hide) — DOM-removal assertions are valid
+- i18n text "Are you sure you want to proceed with this action?" confirmed correct in `l10n/en-us.yaml`
+- Mock API URL uses correct Rancher proxy path (not localhost:1080 from quick reference)
+- Runner dispatched (attempt 1)
+
+### Verified Selectors (tool-confirmation feature area)
+- `rancher-ai-ui-chat-message-confirmation-message` → `components/message/Confirmation.vue`
+- `rancher-ai-ui-chat-message-confirmation-confirm-button` → `components/message/Confirmation.vue`
+- `rancher-ai-ui-chat-message-confirmation-cancel-button` → `components/message/Confirmation.vue`
+- `rancher-ai-ui-chat-message-confirmation-confirmed` → `components/message/Confirmation.vue`
+- `rancher-ai-ui-chat-message-confirmation-canceled` → `components/message/Confirmation.vue`
