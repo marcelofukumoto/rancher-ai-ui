@@ -140,3 +140,26 @@ await page.goto('https://localhost:8005', { waitUntil: 'domcontentloaded' });
 ### Mitigation
 - If Playwright tools are denied, dispatch plan verifier (attempt + 1) immediately
 - The plan verifier should trigger a new runner with proper tool configuration
+
+---
+
+## chat-panel-menu Feature — Test 4 Failure: Invalid Sinon-Chai Chainer (PR #21, Attempt 1, 2026-03-31)
+
+### Error Pattern
+- `CypressError: The chainer 'calledAtLeastOnce' was not found. Could not build assertion.`
+- Triggered at line 52 of `chat-panel-menu.spec.ts`
+- Test retried 3 times before failing (all attempts identical failure)
+
+### Root Cause
+- `calledAtLeastOnce` is NOT a valid Cypress/Sinon-Chai chainer
+- Common mistake: using Sinon spy property names directly as Cypress chainers
+
+### Valid Sinon-Chai Assertions in Cypress
+- `.should('have.been.called')` — called at least once (replaces `calledAtLeastOnce`)
+- `.should('have.been.calledOnce')` — called exactly once
+- `.should('have.been.calledTwice')` — called exactly twice
+- `.should('have.been.calledWith', arg)` — called with specific argument
+
+### Anti-Pattern
+- Do NOT use `.calledAtLeastOnce`, `.calledOnce` etc. as direct `.should()` string arguments without `have.been.` prefix
+- Do NOT use Sinon spy property names (e.g. `spy.calledOnce`) as Cypress chai chainers
