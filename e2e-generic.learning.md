@@ -7,7 +7,8 @@
 
 ## context spec (PR #11)
 - Tests (8 total): cluster-context-tag-visible, no-context-home-page, context-tag-removed, context-reset, context-added-via-dropdown, context-in-message, context-disabled-during-processing, namespace-context-tag
-- **ALL 8 TESTS PASSED** on final run (attempt 1 of new counter after fixes applied).
+- **ALL 8 TESTS PASSED** — confirmed passing on 2026-03-31 (attempt 1, run_id 23774492476). Spec is stable.
+- Test durations range from ~2.9s to ~9.5s; total spec duration ~38s.
 - Selector fix: `.should('be.visible')` → `.scrollIntoView().should('exist')` for `[data-testid="rancher-ai-ui-context-tag-local"]`
 - `aiMessage.context()` should be on `userMessage` (context tags shown on user messages, not AI messages)
 - `.context-reset.should('be.visible')` → `.should('exist')`; `.chat-context.should('be.visible')` → `.should('exist')`
