@@ -107,13 +107,11 @@ describe('Console', () => {
 
     cy.get(`[data-teststatus="rancher-ai-ui-chat-message-status-3-inprogress"]`).should('exist');
 
-    cy.wait(500);
-    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('console-test-5-disabled-during-processing');
-
-    chat.getMessage(3).isCompleted();
-
     cy.get('[data-testid="rancher-ai-ui-chat-input-textarea"]').should('not.have.attr', 'disabled');
     console.sendButton().should('be.disabled');
+
+    cy.wait(500);
+    cy.get('[data-testid="rancher-ai-ui-chat-container"]').screenshot('console-test-5-disabled-during-processing');
   });
 
   it('navigates prompt history with up and down arrows', () => {
