@@ -9,11 +9,16 @@
 - `rancher-ai-ui-chat-message-box-{id}` → `components/panels/Messages.vue` (uses `message.id` from store)
 - `rancher-ai-ui-chat-container` → `pages/Chat.vue`
 - `rancher-ai-ui-multi-agent-select` → `cypress/e2e/po/console.po.ts` confirms it exists
+- `.send-button` → `components/panels/Console.vue` (line ~285, inside `.chat-input-complete` wrapper)
+- `.chat-input-complete` → `components/panels/Console.vue` (line ~249, wraps overlay + send button)
+- `.chat-input-complete .text` → `components/panels/Console.vue` (line ~251, `<div class="text">` inside `.chat-input-complete`)
+- `.disabled-panel` → `components/panels/Console.vue` (lines ~244, ~282; applied when `props.disabled` is true)
+- `.disclaimer` → `components/console/VerifyResultsDisclaimer.vue` (line 22)
+- `.disclaimer-section-title` → `components/console/VerifyResultsDisclaimer.vue` (line 65)
 
 ### CSS Selectors (no data-testid available)
 - `.llm-model-label` → `components/console/LlmModelLabel.vue`
 - `.textlabel-popper .inline-button` → `components/popover/TextLabel.vue`
-- `.disclaimer` → `components/console/VerifyResultsDisclaimer.vue`
 
 ## Component Mapping
 
@@ -30,7 +35,7 @@
 ## Common Plan Issues
 
 - **chunkSize inconsistency**: Plans sometimes list different `chunkSize` values in Steps vs. Mock Data table vs. Implementation Notes — spec writer should use Implementation Notes as the authoritative value
-- **Ghost suggestion vs. recalled text**: `{uparrow}` in textarea fills it directly (no ghost); plans should not describe a "ghost text" assertion after pressing up arrow
+- **Ghost suggestion vs. recalled text**: `{uparrow}` in textarea fills `.chat-input-complete .text` overlay (NOT the textarea value itself); plans should not describe a "ghost text" assertion after pressing up arrow as changing the textarea value
 - **Message ID assumptions**: Must document which messages precede the target message in tests that use `rancher-ai-ui-chat-message-box-{N}` selectors
 
 ## Coverage Guidelines
@@ -45,6 +50,7 @@ For `console` feature area:
 ## Anti-Patterns
 
 - Don't use `chunkSize: 5` or higher for "disabled while processing" tests — use `chunkSize: 1` with long text for reliable timing
-- Don't describe `{uparrow}` as showing "ghost text" — it fills the textarea with the value
+- Don't describe `{uparrow}` as changing the textarea value — it fills `.chat-input-complete .text` overlay
 - Don't hardcode message IDs without documenting the full message sequence in preconditions
 - Avoid `.v-popper__inner` as the primary popover selector — prefer component-specific classes like `.disclaimer`
+- Don't forget `{ force: true }` for `{tab}` keypress in textarea
