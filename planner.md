@@ -17,6 +17,17 @@
 - `.disclaimer-section-title` → `components/console/VerifyResultsDisclaimer.vue` (line 65)
 - `.tab-label-box` → `components/panels/Console.vue` (confirmed exists in template)
 
+### Verified Selectors (message-bubble-actions feature area)
+- `.chat-msg-bubble` → `components/message/index.vue` (class on bubble div)
+- `.chat-msg-bubble-actions` → `components/message/index.vue` (v-if="!props.disabled"; CSS opacity:0 by default, 1 on :hover)
+- `.bubble-action-btn` → `components/message/BubbleButton.vue` (button class)
+- `.bubble-action-btn .icon-copy` → BubbleButton icon rendered as `<i class="icon icon-copy">` (default copy state)
+- `.bubble-action-btn .icon-checkmark` → BubbleButton icon when `showCopySuccess === true` (1-second feedback)
+- `.bubble-action-btn .icon-backup` → BubbleButton icon for resend (User messages only, `v-if="role === User && !pendingConfirmation"`)
+- `rancher-ai-ui-chat-message-show-thinking-button` → `components/message/index.vue` on BubbleButton (v-if: role===Assistant && !!thinkingContent)
+- `.inline-button` → `components/message/index.vue` on RcButton for "Hide Thinking" (v-if: role===Assistant && !!thinkingContent && showThinking)
+- `rancher-ai-ui-chat-message-formatted-content` → `components/message/index.vue` on formatted message span
+
 ### CSS Selectors (no data-testid available)
 - `.llm-model-label` → `components/console/LlmModelLabel.vue`
 - `.textlabel-popper .inline-button` → `components/popover/TextLabel.vue`
@@ -26,6 +37,7 @@
 | Feature Area | Key Components |
 |---|---|
 | `console` | `components/panels/Console.vue`, `components/console/LlmModelLabel.vue`, `components/console/VerifyResultsDisclaimer.vue`, `components/popover/TextLabel.vue`, `composables/useInputComposable.ts` |
+| `message-bubble-actions` | `components/message/index.vue`, `components/message/BubbleButton.vue`, `composables/useInputComposable.ts`, `cypress/e2e/po/message.po.ts` |
 
 ## Message ID Behavior
 - Message IDs come from `store/chat.ts` — `msgIdCnt` starts at `0`, incremented with `++msgIdCnt` per message
@@ -48,6 +60,13 @@ For `console` feature area:
 - Test disabled state during AI processing (use small `chunkSize: 1` for reliable timing)
 - Test visual elements: LLM model label visibility, disclaimer popover
 
+For `message-bubble-actions` feature area:
+- Always test copy icon toggle (icon-copy → icon-checkmark → icon-copy after 1 sec timeout)
+- Always test resend button presence on user messages AND absence on AI messages
+- Test thinking toggle: show via BubbleButton, hide via `.inline-button` "Hide Thinking"
+- Test disabled state: `.chat-msg-bubble-actions` completely absent from DOM when panel disabled (v-if, not CSS)
+- Use `trigger('mouseenter', { force: true })` on `.chat-msg-bubble` to simulate hover; use `{ force: true }` on clicks since buttons start at opacity:0/pointer-events:none
+
 ## Mock Service API (Verified)
 - Enqueue: `POST ${llmMockServiceProxyPath}/v1/control/push` body: `{ agent, text: { chunks: [...] } }` — verified in `cypress/support/commands/llm-mock-service-api.ts`
 - Clear: `POST ${llmMockServiceProxyPath}/v1/control/clear` — verified in same file
@@ -66,6 +85,7 @@ For `console` feature area:
 - Avoid `.v-popper__inner` as the primary popover selector — prefer component-specific classes like `.disclaimer`
 - Don't forget `{ force: true }` for `{tab}` keypress in textarea
 - Don't use the disclaimer trigger text "Verify results" alone — the actual text is "Verify the results." (include "the" and period or use partial match)
+- Don't assert `chat.getMessage(N).content()` to check thinking visibility — `content()` returns only `rancher-ai-ui-chat-message-formatted-content` (never contains thinking text); use `containsText()` or `cy.contains()` scoped to the message box instead
 
 ## Verification History
 
@@ -76,7 +96,11 @@ For `console` feature area:
 - Plan correctly follows all anti-patterns from learnings (ghost text overlay, chunkSize 1, message ID docs)
 - Minor note: Test 9 disclaimer trigger uses "Verify results" partial text match — `.textlabel-popper .inline-button` is more reliable alternative if text match fails
 
-### PR #16 — console re-verification (2026-03-31, Run 23813788792)
-- **Verdict**: APPROVED (9/9 checks passed) — same plan, same result
-- Plan unchanged since previous approval; all checks continue to pass
-- Runner dispatched with attempt 1
+### PR #19 — message-bubble-actions (2026-03-31, Run 23814738991)
+- **Verdict**: APPROVED (9/9 checks passed)
+- All 9 test cases well-structured with all required fields
+- All 10 selectors verified against source components (mix of data-testid and CSS class selectors)
+- Plan correctly uses `trigger('mouseenter', { force: true })` for CSS-only hover reveal
+- Plan correctly uses `chunkSize: 1` for Test 9 (disabled state timing)
+- Plan correctly documents message ID sequences for each test
+- Minor observation: Test 7 "before" assertion `content()` doesn't contain thinking text is trivially true (content() only returns formatted-message-content, not thinking span); spec writer should use `cy.contains('...').should('not.exist')` for a stronger pre-condition check
