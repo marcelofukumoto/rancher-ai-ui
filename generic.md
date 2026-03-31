@@ -39,3 +39,19 @@ See e2e-generic.learning.md for full learnings.
 - `getMessage(2)` = first user message (use `.containsText()` to verify text, never `.isCompleted()`)
 - `getMessage(3)` = first AI response (use `.isCompleted()` to wait for completion)
 - For multiple exchanges: user messages are even, AI responses are odd (3, 5, 7, ...)
+
+---
+
+## console Feature — "disables textarea while AI is processing" RECURRING FAILURE (PR #15, Attempt 1)
+
+### Pattern
+- This test fails repeatedly across PRs: `status-3-completed` never found (line 84)
+- The spec calls `getMessage(3).isCompleted()` at line 84 before checking disabled state
+- This times out because either: (a) the mock agent never emits `Tag.MessageEnd`, or (b) the spec is structured incorrectly
+
+### Known Fix (apply to spec, not to wait for completed BEFORE checking disabled)
+- The test should verify textarea is disabled DURING inprogress, then optionally wait for completion AFTER
+- If the mock agent is unreliable for completing, use `getMessage(3).isInProgress()` to detect inprogress state
+- Do NOT call `.isCompleted()` as a prerequisite before checking disabled — the AI may never complete in the mock
+- Alternatively, increase the timeout or use `cy.get(..., { timeout: 20000 })` for `status-3-completed`
+- If the mock agent does not emit completion, the test structure must be revised to NOT depend on it
