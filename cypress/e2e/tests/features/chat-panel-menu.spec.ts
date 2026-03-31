@@ -62,7 +62,7 @@ describe('Feature: chat-panel-menu', () => {
     menu.open();
     cy.contains('Download Messages').click();
 
-    cy.get('@createObjectURL').should('have.been.calledAtLeastOnce');
+    cy.get('@createObjectURL').should('have.been.called');
     cy.get('[data-testid="rancher-ai-ui-chat-container"]').should('be.visible');
 
     cy.wait(500);
