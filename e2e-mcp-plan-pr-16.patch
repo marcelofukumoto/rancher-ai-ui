@@ -1,0 +1,114 @@
+From d064356241beccd6c312c9d77b401bcc2a8b5e47 Mon Sep 17 00:00:00 2001
+From: Copilot <223556219+Copilot@users.noreply.github.com>
+Date: Tue, 31 Mar 2026 20:10:00 +0000
+Subject: [PATCH] fix(e2e-mcp): fix MCP test plan for console - attempt 3
+
+Fix Test 7: console is NOT disabled during GeneratingResponse (streaming).
+Revise assertions to verify console REMAINS ACTIVE during streaming.
+Update selectors table, screenshots names, chunk construction section.
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+---
+ cypress/e2e/tests/features/mcp-test-plan-console.md | 40 +++++++++----------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/cypress/e2e/tests/features/mcp-test-plan-console.md b/cypress/e2e/tests/features/mcp-test-plan-console.md
+index d064356..fixed01 100644
+--- a/cypress/e2e/tests/features/mcp-test-plan-console.md
++++ b/cypress/e2e/tests/features/mcp-test-plan-console.md
+@@ -64,7 +64,7 @@
+ | `.chat-input-complete .text` | Ghost text overlay (prompt history / tab autocomplete preview) |
+ | `.tab-label-box` | "Tab" key hint label shown with autocomplete |
+ | `.send-button` | Send button inside console |
+-| `.disabled-panel` | Class applied to input wrapper and send area when AI is processing |
++| `.disabled-panel` | Class applied to input wrapper and send area when console is disabled (only during `AwaitingConfirmation` or service errors — NOT during streaming) |
+ | `.llm-model-label` | LLM model name label in console info bar |
+ | `.disclaimer` | Verify results disclaimer popover content |
+ | `.disclaimer-section-title` | Section title inside disclaimer popover |
+@@ -259,9 +259,9 @@
+ 
+ ---
+ 
+-### Test 7: Console is disabled while the AI is processing a response
++### Test 7: Console remains active while the AI is streaming a response
+ 
+-**Description:** Verifies that the console input and send button are visually disabled while the AI is processing a streaming response, and re-enabled once the response completes.
++**Description:** Verifies that the console input and send button remain active (not disabled) while the AI is streaming a response. The `disabled` state is intentionally NOT triggered by `GeneratingResponse` — only by `AwaitingConfirmation` or service errors. This test confirms the console stays interactive throughout streaming and after it completes.
+ 
+ **Preconditions:**
+ - Use a mock response with many small chunks to create a long streaming window
+@@ -270,26 +270,28 @@
+ 1. Navigate to `https://localhost:8005` and log in with `admin` / `password`.
+ 2. Obtain the `R_SESS` cookie.
+ 3. Enqueue a welcome response: `{ "agent": "rancher", "text": { "chunks": ["Welcome to Rancher AI!"] } }`
+-4. Enqueue a slow streaming reply with many single-character chunks so the processing window is wide enough to capture (use a long text split into 1-character chunks). For example, split the string `"This is a long streaming response from the AI assistant that verifies the disabled state of the console while the model is generating text."` into individual characters, each as its own chunk.
++4. Enqueue a slow streaming reply with many single-character chunks so the streaming window is wide enough to observe (use a long text split into 1-character chunks). For example, split the string `"This is a long streaming response from the AI assistant that verifies the active state of the console while the model is generating text."` into individual characters, each as its own chunk.
+ 5. Click the AI assistant button in the Rancher header.
+ 6. Wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]` (timeout: 15 seconds).
+ 7. Wait for `[data-testid="rancher-ai-ui-chat-message-box-1"]` to appear.
+ 8. Click on `[data-testid="rancher-ai-ui-chat-input-textarea"]`.
+ 9. Type `Give me a long response` and press Enter.
+-10. Immediately (within ~500ms) check that `.disabled-panel` class is present on the element inside `[data-testid="rancher-ai-ui-chat-console"]`.
+-11. Take a screenshot named `console-mcp-test-7-disabled-during-processing`.
++10. Immediately (within ~500ms) verify that the console remains active — the `.disabled-panel` class should NOT be present on any child of `[data-testid="rancher-ai-ui-chat-console"]`, and the textarea should NOT have the `disabled` attribute.
++11. Take a screenshot named `console-mcp-test-7-active-during-streaming`.
+ 12. Wait for `[data-testid="rancher-ai-ui-chat-message-box-3"]` to be visible and for the AI message to appear completed (timeout: 30 seconds).
+-13. Take a screenshot named `console-mcp-test-7-enabled-after-processing`.
++13. Take a screenshot named `console-mcp-test-7-active-after-streaming`.
+ 
+-**Assertions (during processing):**
+-- The element `[data-testid="rancher-ai-ui-chat-console"]` contains a child with class `disabled-panel`
+-- The textarea `[data-testid="rancher-ai-ui-chat-input-textarea"]` has the `disabled` attribute
++**Assertions (during streaming):**
++- No element with class `disabled-panel` exists inside `[data-testid="rancher-ai-ui-chat-console"]`
++- The textarea `[data-testid="rancher-ai-ui-chat-input-textarea"]` does NOT have the `disabled` attribute
++- The `.send-button` inside `[data-testid="rancher-ai-ui-chat-console"]` is visible and not disabled
+ 
+-**Assertions (after processing):**
++**Assertions (after streaming completes):**
+ - No `.disabled-panel` class is present on the console children
+ - The textarea `[data-testid="rancher-ai-ui-chat-input-textarea"]` does NOT have the `disabled` attribute
++- `[data-testid="rancher-ai-ui-chat-message-box-3"]` is visible and contains the streamed text
+ 
+-**Selectors:** `rancher-ai-ui-chat-console`, `rancher-ai-ui-chat-input-textarea`, `.disabled-panel`
++**Selectors:** `rancher-ai-ui-chat-console`, `rancher-ai-ui-chat-input-textarea`, `.send-button`
+ 
+ ---
+ 
+@@ -356,16 +358,16 @@
+ | Test 4 | Welcome: `["Welcome!"]` · Reply: `["Sure, here is info about deployments."]` |
+ | Test 5 | Same as Test 4 |
+ | Test 6 | Same as Test 4 |
+-| Test 7 | Welcome: `["Welcome to Rancher AI!"]` · Slow reply: long string split into 1-char chunks |
++| Test 7 | Welcome: `["Welcome to Rancher AI!"]` · Slow streaming reply: long string split into 1-char chunks |
+ | Test 8 | Welcome: `["Hi there!"]` |
+ | Test 9 | Welcome: `["Hello!"]` |
+ 
+-### Test 7 — Slow Response Chunk Construction
++### Test 7 — Slow Streaming Chunk Construction
+ 
+ Split the following string into individual single-character chunks:
+ 
+ ```
+-"This is a long streaming response from the AI assistant that verifies the disabled state of the console while the model is generating text."
++"This is a long streaming response from the AI assistant that verifies the active state of the console while the model is generating text."
+ ```
+ 
+ The resulting JSON payload for Test 7's reply:
+@@ -374,7 +376,7 @@
+ {
+   "agent": "rancher",
+   "text": {
+-    "chunks": ["T","h","i","s"," ","i","s"," ","a"," ","l","o","n","g"," ","s","t","r","e","a","m","i","n","g"," ","r","e","s","p","o","n","s","e"," ","f","r","o","m"," ","t","h","e"," ","A","I"," ","a","s","s","i","s","t","a","n","t"," ","t","h","a","t"," ","v","e","r","i","f","i","e","s"," ","t","h","e"," ","d","i","s","a","b","l","e","d"," ","s","t","a","t","e"," ","o","f"," ","t","h","e"," ","c","o","n","s","o","l","e"," ","w","h","i","l","e"," ","t","h","e"," ","m","o","d","e","l"," ","i","s"," ","g","e","n","e","r","a","t","i","n","g"," ","t","e","x","t","."]
++    "chunks": ["T","h","i","s"," ","i","s"," ","a"," ","l","o","n","g"," ","s","t","r","e","a","m","i","n","g"," ","r","e","s","p","o","n","s","e"," ","f","r","o","m"," ","t","h","e"," ","A","I"," ","a","s","s","i","s","t","a","n","t"," ","t","h","a","t"," ","v","e","r","i","f","i","e","s"," ","t","h","e"," ","a","c","t","i","v","e"," ","s","t","a","t","e"," ","o","f"," ","t","h","e"," ","c","o","n","s","o","l","e"," ","w","h","i","l","e"," ","t","h","e"," ","m","o","d","e","l"," ","i","s"," ","g","e","n","e","r","a","t","i","n","g"," ","t","e","x","t","."]
+   }
+ }
+ ```
+@@ -384,6 +386,6 @@
+ 
+ - **Ghost text vs textarea value**: When ArrowUp is pressed with an empty textarea, the previous message appears in the `.chat-input-complete .text` overlay — **not** in the textarea's `.value`. Tests 4–6 must assert against `.chat-input-complete .text`, not the textarea value.
+ - **Tab key in textarea**: Standard Playwright `page.keyboard.press('Tab')` should work if the textarea already has focus. Verify focus before pressing Tab.
+-- **chunkSize for disabled-state tests**: Always use `chunkSize: 1` (single-character chunks) or many small chunks for Test 7 to ensure the disabled window is long enough to capture.
++- **chunkSize for active-state tests**: Always use `chunkSize: 1` (single-character chunks) or many small chunks for Test 7 to ensure the streaming window is long enough to observe the console's active state.
+ - **Session cookie**: The `R_SESS` cookie is required to authenticate mock service API calls. Extract it after logging in via `page.context().cookies()` or `page.evaluate(() => document.cookie)`.
+ - **Message ID assumptions**: All tests assume a fresh chat session. Message ID 1 is always the welcome message; subsequent IDs follow the conversation order.
