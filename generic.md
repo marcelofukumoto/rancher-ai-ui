@@ -70,17 +70,32 @@ See e2e-generic.learning.md for full learnings.
 
 ---
 
-## MCP Playwright Runner — Tool Allowlist RESOLVED (2026-03-31)
+## MCP Playwright Runner — Tool Allowlist Issue (PR #16, Attempt 1+2, 2026-03-31)
 
-### Resolution
-- The `--allow-tool playwright` was missing from the compiled lock file due to a compiler bug in gh-aw v0.65.1
-- This was manually patched in the `.lock.yml` to add `--allow-tool playwright` to the Copilot CLI command
-- Playwright MCP tools (browser_navigate, browser_click, browser_snapshot, etc.) are now fully accessible
-- `cd *`, `git *`, `gh *` were added to bash tool allowlist for git operations
-- `web-fetch:` was added for web content fetching
+### Recurrence on Attempt 2 (same session/run)
+- The plan verifier dispatched a new runner with attempt=2, but the same tool allowlist issue persists
+- Pattern: EVERY run in this session has Playwright blocked — `--allow-tool playwright` is missing from `/tmp/awf-cmd-1.sh`
+- Each time, the runner must dispatch attempt+1 via plan verifier
 
-### DO NOT bail out if Playwright tools appear unavailable
-- The previous learning "If Playwright tools are denied, dispatch plan verifier immediately" is OBSOLETE
-- Playwright tools ARE available through the MCP Gateway and the tool allowlist
-- If you see Playwright tools in your tool list, USE THEM — they work
-- DO NOT inspect `/tmp/awf-cmd-1.sh` to decide if Playwright is available — just try calling browser_navigate
+### Original Attempt 1 Notes
+
+
+### Root Cause
+- Workflow run had Playwright MCP tools NOT in the tool allowlist
+- `/tmp/awf-cmd-1.sh` contained `--allow-tool github --allow-tool safeoutputs --allow-tool 'shell(...)'` but **no `--allow-tool playwright-*`**
+- All Playwright MCP tool calls return: `Permission denied and could not request permission from user`
+- `curl` (needed for mock setup) was also blocked for network access to localhost
+
+### Diagnosis Steps
+- Check `/tmp/awf-cmd-1.sh` to verify which tools are allowed
+- Look for `--allow-tool playwright` or `--allow-tool playwright-*` in the startup command
+- The `allowed_domains` in `aw_info.json` includes "playwright" but this is about NETWORK/firewall access (the MCP server IS reachable), not tool call permissions
+
+### Pattern
+- `allowed_domains: ["playwright"]` = playwright MCP server is reachable via firewall
+- `--allow-tool playwright` (in awf-cmd-1.sh) = required for actual tool calls to succeed
+- If the runner runs again without `--allow-tool playwright`, all tests will fail again
+
+### Mitigation
+- If Playwright tools are denied, dispatch plan verifier (attempt + 1) immediately
+- The plan verifier should trigger a new runner with proper tool configuration
