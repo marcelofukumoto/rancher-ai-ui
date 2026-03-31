@@ -39,6 +39,22 @@
 - `.inline-button` → `components/message/index.vue` on RcButton for "Hide Thinking" (v-if: role===Assistant && !!thinkingContent && showThinking)
 - `rancher-ai-ui-chat-message-formatted-content` → `components/message/index.vue` on formatted message span
 
+### Verified Selectors (history-panel feature area)
+- `rancher-ai-ui-chat-history-button` → `components/panels/Header.vue`
+- `rancher-ai-ui-chat-history-panel` → `components/panels/History.vue`
+- `rancher-ai-ui-chat-history-panel-overlay` → `components/panels/History.vue` (click.self on wrapper closes panel)
+- `rancher-ai-ui-chat-history-header-button` → `components/history/HistoryHeader.vue`
+- `rancher-ai-ui-chat-history-create-chat-button` → `components/panels/History.vue`
+- `rancher-ai-ui-chat-history-chat-item-{N}` → `components/panels/History.vue` (dynamic: `rancher-ai-ui-chat-history-chat-item-${ index }`, 0-based)
+- `rancher-ai-ui-chat-history-item-name` → `components/panels/History.vue`
+- `rancher-ai-ui-chat-history-item-name-input` → `components/panels/History.vue`
+- `rancher-ai-ui-chat-history-chat-item-menu-button` → `components/history/HistoryChatMenu.vue`
+- `rancher-ai-ui-chat-history-chat-item-menu-button-option-rename-chat` → `HistoryChatMenu.vue` (dynamic via `opt.id = 'rename-chat'`)
+- `rancher-ai-ui-chat-history-chat-item-menu-button-option-delete-chat` → `HistoryChatMenu.vue` (dynamic via `opt.id = 'delete-chat'`)
+- `prompt-remove-confirm-button` → `dialog/DeleteChatCard.vue` line 79
+- `.focused` (CSS class) → `components/panels/History.vue` (`:class="{'focused': props.activeChatId === chat.id || editingChat?.id === chat.id }"`)
+- **NOTE**: `rancher-ai-ui-delete-chat-confirm-button` (listed in quick reference) does NOT exist in source — use `prompt-remove-confirm-button` instead
+
 ### CSS Selectors (no data-testid available)
 - `.llm-model-label` → `components/console/LlmModelLabel.vue`
 - `.textlabel-popper .inline-button` → `components/popover/TextLabel.vue`
@@ -50,12 +66,19 @@
 | `console` | `components/panels/Console.vue`, `components/console/LlmModelLabel.vue`, `components/console/VerifyResultsDisclaimer.vue`, `components/popover/TextLabel.vue`, `composables/useInputComposable.ts` |
 | `message-bubble-actions` | `components/message/index.vue`, `components/message/BubbleButton.vue`, `composables/useInputComposable.ts`, `cypress/e2e/po/message.po.ts` |
 | `chat-panel-menu` | `components/header/ChatPanelMenu.vue`, `components/panels/Header.vue`, `components/header/KeyboardShortcuts.vue`, `components/popover/TextLabel.vue`, `pages/Chat.vue`, `composables/useChatMessageComposable.ts` |
+| `history-panel` | `components/panels/History.vue`, `components/panels/Header.vue`, `components/history/HistoryHeader.vue`, `components/history/HistoryChatMenu.vue`, `dialog/DeleteChatCard.vue`, `pages/Chat.vue` |
 
 ## Message ID Behavior
 - Message IDs come from `store/chat.ts` — `msgIdCnt` starts at `0`, incremented with `++msgIdCnt` per message
 - After `cleanChatHistory()`, a new chat starts fresh with `msgIdCnt = 0`
 - First message (e.g., AI welcome) → ID 1; second message → ID 2; etc.
 - Plans that reference `rancher-ai-ui-chat-message-box-2` assume a welcome message is sent as ID 1
+
+## History Panel Behavior Notes
+- Clicking a history chat item emits `open:chat` → `Chat.vue` calls `ensureReconnectionAndLoadChat` which sets `showHistory.value = false` → history panel **always** auto-closes when loading a chat
+- Clicking overlay emits `close:panel` → `Chat.vue` sets `showHistory.value = false`
+- Deleting active chat calls `ensureReconnectionAndLoadChat(null)` → also sets `showHistory.value = false`
+- Empty chats (no user messages) are not persisted; only chats with at least one user message appear in history
 
 ## Common Plan Issues
 
@@ -88,6 +111,14 @@ For `chat-panel-menu` feature area:
 - All 6 shortcut entries must be verified by text (verified against `en-us.yaml`)
 - For outside-click dismiss test: use `cy.get('[data-testid="rancher-ai-ui-chat-container"]').click(10, 200)` NOT the close button
 
+For `history-panel` feature area:
+- History panel auto-closes when loading a chat, deleting active chat, or clicking overlay
+- Use `hover()` before clicking `rancher-ai-ui-chat-history-chat-item-menu-button` (only visible on hover)
+- Coordinate-based overlay click recommended to ensure click lands outside panel: `click({ position: { x: 900, y: 200 } })`
+- Use `prompt-remove-confirm-button` for delete confirm (NOT `rancher-ai-ui-delete-chat-confirm-button`)
+- Empty chats not persisted; must send at least one user message before chat appears in history
+
+## Mock API Notes
 
 - Enqueue: `POST ${llmMockServiceProxyPath}/v1/control/push` body: `{ agent, text: { chunks: [...] } }` — verified in `cypress/support/commands/llm-mock-service-api.ts`
 - Clear: `POST ${llmMockServiceProxyPath}/v1/control/clear` — verified in same file
@@ -110,8 +141,9 @@ For `chat-panel-menu` feature area:
 - Don't assert `chat.getMessage(N).content()` to check thinking visibility — `content()` returns only `rancher-ai-ui-chat-message-formatted-content` (never contains thinking text); use `containsText()` or `cy.contains()` scoped to the message box instead
 - Don't use `rancher-ai-ui-chat-menu-button` data-testid — this does NOT exist in source despite being listed in the quick reference; use `.chat-console-menu-container button` instead
 - Don't use close button (`rancher-ai-ui-chat-close-button`) as an outside-click target for dropdown dismiss tests — it will close the entire chat panel; use `.chat-container.click(10, 200)` instead
+- Don't assume history panel stays open after clicking a chat item — it always auto-closes (confirmed by source `Chat.vue`)
 
-
+## PR History
 
 ### PR #16 — console (2026-03-31, Run 23813233811)
 - **Verdict**: APPROVED (9/9 checks passed)
@@ -142,29 +174,6 @@ For `chat-panel-menu` feature area:
 - Plan correctly notes `Header.vue` does NOT pass `disabled` to `ChatPanelMenu`
 - Test 4 stub ordering correct; Test 9 Implementation Notes clarify to use container click (not close button) for outside-click dismiss
 
-
-### Verified Selectors (history-panel feature area)
-- `rancher-ai-ui-chat-history-button` → `components/panels/Header.vue`
-- `rancher-ai-ui-chat-history-panel` → `components/panels/History.vue`
-- `rancher-ai-ui-chat-history-panel-overlay` → `components/panels/History.vue` (click.self on wrapper closes panel)
-- `rancher-ai-ui-chat-history-header-button` → `components/history/HistoryHeader.vue`
-- `rancher-ai-ui-chat-history-create-chat-button` → `components/panels/History.vue`
-- `rancher-ai-ui-chat-history-chat-item-{N}` → `components/panels/History.vue` (dynamic: `rancher-ai-ui-chat-history-chat-item-${ index }`, 0-based)
-- `rancher-ai-ui-chat-history-item-name` → `components/panels/History.vue`
-- `rancher-ai-ui-chat-history-item-name-input` → `components/panels/History.vue`
-- `rancher-ai-ui-chat-history-chat-item-menu-button` → `components/history/HistoryChatMenu.vue`
-- `rancher-ai-ui-chat-history-chat-item-menu-button-option-rename-chat` → `HistoryChatMenu.vue` (dynamic via `opt.id = 'rename-chat'`)
-- `rancher-ai-ui-chat-history-chat-item-menu-button-option-delete-chat` → `HistoryChatMenu.vue` (dynamic via `opt.id = 'delete-chat'`)
-- `prompt-remove-confirm-button` → `dialog/DeleteChatCard.vue` line 79
-- `.focused` (CSS class) → `components/panels/History.vue` (`:class="{'focused': props.activeChatId === chat.id || editingChat?.id === chat.id }"`)
-- **NOTE**: `rancher-ai-ui-delete-chat-confirm-button` (listed in quick reference) does NOT exist in source — use `prompt-remove-confirm-button` instead
-
-## History Panel Behavior Notes
-- Clicking a history chat item emits `open:chat` → `Chat.vue` calls `ensureReconnectionAndLoadChat` which sets `showHistory.value = false` → history panel **always** auto-closes when loading a chat
-- Clicking overlay emits `close:panel` → `Chat.vue` sets `showHistory.value = false`
-- Deleting active chat calls `ensureReconnectionAndLoadChat(null)` → also sets `showHistory.value = false`
-- Empty chats (no user messages) are not persisted; only chats with at least one user message appear in history
-
 ### PR #22 — history-panel (2026-03-31, Run 23821676618)
 - **Verdict**: APPROVED (all checks passed)
 - All 9 test cases well-structured with all required fields
@@ -172,3 +181,8 @@ For `chat-panel-menu` feature area:
 - Plan correctly identifies `prompt-remove-confirm-button` (NOT `rancher-ai-ui-delete-chat-confirm-button` from quick reference which doesn't exist)
 - Minor note: Plan says history panel "may or may not" auto-close after clicking chat item — in fact it always auto-closes (confirmed by source)
 - History panel close behaviors correctly mapped: overlay click, header button, chat item click, chat deletion all close the panel
+
+### PR #22 — history-panel (2026-03-31, Run 23822332507)
+- **Verdict**: APPROVED (re-verification, all checks passed)
+- Same plan as prior run; all 14 selectors re-verified against source
+- Runner dispatched (attempt 1)
