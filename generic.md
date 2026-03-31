@@ -70,7 +70,15 @@ See e2e-generic.learning.md for full learnings.
 
 ---
 
-## MCP Playwright Runner — Tool Allowlist Issue (PR #16, Attempt 1, 2026-03-31)
+## MCP Playwright Runner — Tool Allowlist Issue (PR #16, Attempt 1+2, 2026-03-31)
+
+### Recurrence on Attempt 2 (same session/run)
+- The plan verifier dispatched a new runner with attempt=2, but the same tool allowlist issue persists
+- Pattern: EVERY run in this session has Playwright blocked — `--allow-tool playwright` is missing from `/tmp/awf-cmd-1.sh`
+- Each time, the runner must dispatch attempt+1 via plan verifier
+
+### Original Attempt 1 Notes
+
 
 ### Root Cause
 - Workflow run had Playwright MCP tools NOT in the tool allowlist
