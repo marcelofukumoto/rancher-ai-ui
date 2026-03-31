@@ -186,3 +186,8 @@ For `history-panel` feature area:
 - **Verdict**: APPROVED (re-verification, all checks passed)
 - Same plan as prior run; all 14 selectors re-verified against source
 - Runner dispatched (attempt 1)
+
+### PR #22 — history-panel (2026-03-31, Run 23823219074)
+- **Verdict**: APPROVED (re-verification #3, all checks passed)
+- Same plan as prior runs; all 15 selectors re-verified against source
+- Runner dispatched (attempt 1)
