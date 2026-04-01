@@ -267,3 +267,11 @@ For `history-panel` feature area:
 - Mock push format: `{ agent: "rancher", text: { chunks: [...] } }` for adaptive; `{ agent: null, text: {...} }` for manual
 - Mock API endpoint: `POST /v1/control/push` via Rancher proxy at `https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push`
 - Agent config creation via API: `POST /v1/ai.cattle.io.aiagentconfig` requires CSRF token from `CSRF` cookie
+
+### PR #23 — tool-confirmation (2026-04-01, Run 23826598145)
+- **Verdict**: APPROVED (re-verification, all checks passed)
+- Same plan as prior run 23823893066; all 12 selectors re-verified against source
+- All Confirmation.vue selectors confirmed present: confirmation-message, confirm-button, cancel-button, confirmed, canceled
+- i18n confirmation question "Are you sure you want to proceed with this action?" confirmed in en-us.yaml line 136
+- Test 3 correctly tests `.disabled-panel` for `AwaitingConfirmation` phase (valid per Chat.vue disabled computed)
+- Runner dispatched (attempt 1)
