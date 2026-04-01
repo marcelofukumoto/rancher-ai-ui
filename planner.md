@@ -228,3 +228,9 @@ For `history-panel` feature area:
 
 ## Anti-Patterns (additions)
 - Don't use `PUT` for the `/v1/control/push` mock API endpoint — correct method is `POST` (verified in `cypress/support/commands/llm-mock-service-api.ts` line 124)
+
+### PR #23 — tool-confirmation (2026-04-01, Run 23825956400)
+- **Verdict**: APPROVED (re-verification #3, all checks passed)
+- Same plan as prior runs (23823893066, 23824651850); all 12 selectors re-verified against source
+- All 8 test cases well-structured with all required fields
+- Runner dispatched (attempt 1)
