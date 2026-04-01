@@ -267,3 +267,18 @@ For `history-panel` feature area:
 - Mock push format: `{ agent: "rancher", text: { chunks: [...] } }` for adaptive; `{ agent: null, text: {...} }` for manual
 - Mock API endpoint: `POST /v1/control/push` via Rancher proxy at `https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push`
 - Agent config creation via API: `POST /v1/ai.cattle.io.aiagentconfig` requires CSRF token from `CSRF` cookie
+
+### Verified Selectors (tool-confirmation feature area)
+- `rancher-ai-ui-chat-message-confirmation-message` → `components/message/Confirmation.vue` (`<span v-clean-html="confirmationText">`)
+- `rancher-ai-ui-chat-message-confirmation-confirm-button` → `components/message/Confirmation.vue` (RcButton inside `.standard-confirmation`, v-if: status===Pending)
+- `rancher-ai-ui-chat-message-confirmation-cancel-button` → `components/message/Confirmation.vue` (RcButton inside `.standard-confirmation`, v-if: status===Pending)
+- `rancher-ai-ui-chat-message-confirmation-confirmed` → `components/message/Confirmation.vue` (div inside `.status-confirmed`, v-if: status===Confirmed)
+- `rancher-ai-ui-chat-message-confirmation-canceled` → `components/message/Confirmation.vue` (div inside `.status-canceled`, v-else-if: status===Canceled)
+
+## Tool Confirmation Behavior Notes
+- Confirmation buttons (`confirm-button`, `cancel-button`) use `v-if="props.value.status === ConfirmationStatus.Pending"` — fully removed from DOM after confirm/cancel
+- Multi-resource confirmation (array args) is **sequential**, NOT batched — each resource gets its own confirmation dialog in a separate message box, one after another
+- Sequential multi-resource message IDs (3 resources in array): msg-1=welcome, msg-2=user, msg-3=first confirmation, msg-4=second confirmation (after confirming first), msg-5=result text (after confirming second)
+- Console `disabled` computed: only disabled during `AwaitingConfirmation`, NOT during `GeneratingResponse` — re-enabled after confirmation resolves
+- Cancel does NOT deliver the next AI message — no msg-4 after cancel (canceling terminates the flow)
+- `ConfirmationStatus.Pending` → buttons shown; `Confirmed` → confirmed indicator; `Canceled` → canceled indicator
