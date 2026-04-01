@@ -1,0 +1,31 @@
+diff --git a/cypress/e2e/tests/features/mcp-test-plan-chat-panel-menu.md b/cypress/e2e/tests/features/mcp-test-plan-chat-panel-menu.md
+index 2f2b286..ca641f6 100644
+--- a/cypress/e2e/tests/features/mcp-test-plan-chat-panel-menu.md
++++ b/cypress/e2e/tests/features/mcp-test-plan-chat-panel-menu.md
+@@ -64,7 +64,7 @@ Some tests require a prior AI response to have content to download or interact w
+ **Enqueue mock response:**
+ 
+ ```
+-PUT https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
++POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
+ Content-Type: application/json
+ Cookie: R_SESS=<session-token>
+ 
+@@ -197,7 +197,7 @@ sent so there is content to download.
+    ```
+ 2. Enqueue a single-chunk mock response:
+    ```
+-   PUT https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
++   POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
+    Content-Type: application/json
+    Cookie: R_SESS=<session-token>
+ 
+@@ -415,7 +415,7 @@ This tests the `rc-dropdown` component's built-in close-on-select behavior.
+ ### Mock API Details
+ 
+ - **Proxy base URL**: `https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy`
+-- **Push endpoint**: `{proxy-base}/v1/control/push` — HTTP PUT with JSON body
++- **Push endpoint**: `{proxy-base}/v1/control/push` — HTTP POST with JSON body
+ - **Clear endpoint**: `{proxy-base}/v1/control/clear` — HTTP POST (no body)
+ - **Authentication**: Include `Cookie: R_SESS=<token>` header (token obtained from login session)
+ - **Do NOT use** `http://localhost:1080/mockserver/expectation` — the quick reference URL is
