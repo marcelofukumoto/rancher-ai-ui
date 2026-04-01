@@ -215,3 +215,16 @@ For `history-panel` feature area:
 - Same plan as prior run (23823893066); all 12 selectors re-verified against source
 - All 8 test cases well-structured with all required fields
 - Runner dispatched (attempt 1)
+
+### PR #24 — chat-panel-menu (2026-04-01, Run 23825702806)
+- **Verdict**: NEEDS_FIX (1 check failed)
+- **Failure**: Mock push endpoint uses HTTP `PUT` instead of `POST` — appears in 3 locations:
+  1. Mock Data Setup section (global): `PUT .../v1/control/push`
+  2. Test 4 Mock Setup step 2: `PUT .../v1/control/push`
+  3. Implementation Notes: `HTTP PUT with JSON body`
+- All 12 selectors verified correct; all i18n texts verified; structure/coverage/feasibility all pass
+- Plan correctly identifies correct CSS selector for menu button and outside-click pattern
+- Plan-fixer dispatched (attempt 1)
+
+## Anti-Patterns (additions)
+- Don't use `PUT` for the `/v1/control/push` mock API endpoint — correct method is `POST` (verified in `cypress/support/commands/llm-mock-service-api.ts` line 124)
