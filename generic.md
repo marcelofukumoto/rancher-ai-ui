@@ -166,3 +166,28 @@ await page.goto('https://localhost:8005', { waitUntil: 'domcontentloaded' });
 - Attempt 1 presumably needed fixes; Attempt 2 passed fully
 - Each test had a corresponding screenshot captured automatically
 
+
+---
+
+## message-source-links Feature — ALL 8 TESTS PASSED (PR #25, Attempt 1, 2026-04-01)
+
+### Summary
+- All 8 tests in `message-source-links.spec.ts` passed on the first attempt
+- No fixes or retries were required
+- Total spec duration: ~46s for 8 tests
+
+### Test Coverage (confirmed working)
+1. Source links section is absent when response has no source link tags
+2. Source links section collapses when chevron is clicked
+3. Source links section re-expands after a second chevron click
+4. Clicking a source link opens the URL in a new tab
+5. RelatedResourcesActions shows "RELATED RESOURCES" label
+6. "And N more resource(s)" button appears for >7 resource actions
+7. Clicking "And N more resource(s)" reveals all actions
+8. Clicking "Show Less" collapses remaining actions
+
+### Notes
+- Source links rendering, collapse/expand toggle, and "show more/less" interactions all work reliably with Cypress
+- New tab link opening (Test 4) passed without needing stub overrides — the spec likely uses `cy.window().stub()` or similar
+- `RelatedResourcesActions` component tested for label text and overflow button behavior
+- All screenshots captured successfully (1 per test)
