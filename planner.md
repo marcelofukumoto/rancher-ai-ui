@@ -282,3 +282,8 @@ For `history-panel` feature area:
 - Console `disabled` computed: only disabled during `AwaitingConfirmation`, NOT during `GeneratingResponse` — re-enabled after confirmation resolves
 - Cancel does NOT deliver the next AI message — no msg-4 after cancel (canceling terminates the flow)
 - `ConfirmationStatus.Pending` → buttons shown; `Confirmed` → confirmed indicator; `Canceled` → canceled indicator
+
+### PR #23 — tool-confirmation (re-verification, Run 23828025817)
+- **Verdict**: APPROVED — plan fixer's changes to Tests 6 & 7 confirmed correct
+- Tests 6 & 7 now correctly describe sequential multi-resource confirmation (msg-3=first, msg-4=second, msg-5=result)
+- Runner dispatched (attempt 1)
