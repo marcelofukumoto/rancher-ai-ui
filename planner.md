@@ -287,3 +287,9 @@ For `history-panel` feature area:
 - **Verdict**: APPROVED — plan fixer's changes to Tests 6 & 7 confirmed correct
 - Tests 6 & 7 now correctly describe sequential multi-resource confirmation (msg-3=first, msg-4=second, msg-5=result)
 - Runner dispatched (attempt 1)
+
+### PR #23 — tool-confirmation (re-verification, Run 23828961129)
+- **Verdict**: APPROVED (re-verification #5, all checks passed)
+- Same plan as prior runs; all 12 selectors re-verified against source
+- All 8 test cases well-structured with all required fields
+- Runner dispatched (attempt 1)
