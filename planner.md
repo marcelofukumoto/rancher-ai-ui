@@ -234,3 +234,12 @@ For `history-panel` feature area:
 - Same plan as prior runs (23823893066, 23824651850); all 12 selectors re-verified against source
 - All 8 test cases well-structured with all required fields
 - Runner dispatched (attempt 1)
+
+### PR #24 — chat-panel-menu (2026-04-01, Run 23826031524)
+- **Verdict**: APPROVED (all checks passed — re-verification after plan-fixer fixed HTTP method)
+- **Fix confirmed**: Mock push endpoint changed from `PUT` to `POST` in all 3 locations (Mock Data Setup, Test 4 Mock Setup, Implementation Notes)
+- All 12 selectors re-verified against source (same as PR #21 which was previously APPROVED)
+- All 9 i18n texts verified (3 menu options + 6 shortcut actions)
+- Plan correctly identifies `rancher-ai-ui-chat-menu-button` does NOT exist; uses `.chat-console-menu-container button`
+- Plan correctly uses Rancher proxy path for mock API (not localhost:1080)
+- Runner dispatched (attempt 1)
