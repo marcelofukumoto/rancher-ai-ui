@@ -57,7 +57,8 @@ When the AI agent executes a tool that modifies cluster resources (e.g., `create
 | `[data-testid="rancher-ai-ui-chat-message-box-1"]` | First message (welcome from AI) |
 | `[data-testid="rancher-ai-ui-chat-message-box-2"]` | Second message (user message) |
 | `[data-testid="rancher-ai-ui-chat-message-box-3"]` | Third message (AI confirmation request) |
-| `[data-testid="rancher-ai-ui-chat-message-box-4"]` | Fourth message (AI result after confirmation) |
+| `[data-testid="rancher-ai-ui-chat-message-box-4"]` | Fourth message (AI confirmation for second resource in multi-resource flow, OR AI result after single-resource confirm) |
+| `[data-testid="rancher-ai-ui-chat-message-box-5"]` | Fifth message (AI result after multi-resource sequential confirm) |
 | `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]` | Confirmation description text |
 | `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` | "Confirm" button |
 | `[data-testid="rancher-ai-ui-chat-message-confirmation-cancel-button"]` | "Cancel" button |
@@ -366,9 +367,9 @@ Cookie: R_SESS=<session-cookie>
 
 ---
 
-### Test 6: Multi-resource confirmation dialog shows both resources
+### Test 6: Multi-resource confirmation dialogs appear sequentially
 
-**Description:** Verifies that when the AI agent requests confirmation to create multiple Kubernetes resources (an array of tool arguments), the confirmation message lists details for all resources and the standard Confirm/Cancel buttons are shown.
+**Description:** Verifies that when the AI agent requests confirmation to create multiple Kubernetes resources (an array of tool arguments), the resources are confirmed **sequentially** — each resource appears in its own confirmation dialog in successive message bubbles. The first confirmation (ConfigMap) appears in message box 3; after clicking Confirm on the first dialog, the second confirmation (Secret) appears in message box 4.
 
 **Preconditions:**
 - Logged in as `admin`
@@ -378,7 +379,8 @@ Cookie: R_SESS=<session-cookie>
 **Message ID sequence:**
 - Message 1: AI welcome
 - Message 2: User message
-- Message 3: AI multi-resource confirmation request
+- Message 3: AI confirmation request for first resource (ConfigMap `my-configmap`)
+- Message 4: AI confirmation request for second resource (Secret `my-secret`), appears after confirming message 3
 
 **Steps:**
 1. Log in, open chat panel, wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
@@ -387,18 +389,26 @@ Cookie: R_SESS=<session-cookie>
 4. Type `Create a ConfigMap and a Secret` into `[data-testid="rancher-ai-ui-chat-input-textarea"]` and press `Enter`.
 5. Wait for `[data-testid="rancher-ai-ui-chat-message-box-3"]` to appear.
 6. Wait for `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]` to be visible inside message box 3.
-7. Read the text content of the confirmation message.
+7. Read the text content of the confirmation message in message box 3.
+8. Click `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` inside message box 3 to confirm the first resource.
+9. Wait for `[data-testid="rancher-ai-ui-chat-message-box-4"]` to appear.
+10. Wait for `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]` to be visible inside message box 4.
+11. Read the text content of the confirmation message in message box 4.
 
 **Assertions:**
-- `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]` is visible inside message box 3.
-- The confirmation message text contains `ConfigMap` and `my-configmap`.
-- The confirmation message text contains `Secret` and `my-secret`.
-- The confirmation message text contains `Are you sure you want to proceed with this action?`.
-- `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` is visible.
-- `[data-testid="rancher-ai-ui-chat-message-confirmation-cancel-button"]` is visible.
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]` inside message box 3 contains `ConfigMap` and `my-configmap`.
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]` inside message box 3 contains `Are you sure you want to proceed with this action?`.
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` is visible inside message box 3 before clicking.
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-cancel-button"]` is visible inside message box 3 before clicking.
+- After clicking Confirm on message box 3, `[data-testid="rancher-ai-ui-chat-message-box-4"]` appears.
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]` inside message box 4 contains `Secret` and `my-secret`.
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]` inside message box 4 contains `Are you sure you want to proceed with this action?`.
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` is visible inside message box 4.
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-cancel-button"]` is visible inside message box 4.
 
 **Selectors:**
 - `[data-testid="rancher-ai-ui-chat-message-box-3"]`
+- `[data-testid="rancher-ai-ui-chat-message-box-4"]`
 - `[data-testid="rancher-ai-ui-chat-message-confirmation-message"]`
 - `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]`
 - `[data-testid="rancher-ai-ui-chat-message-confirmation-cancel-button"]`
@@ -409,7 +419,7 @@ Cookie: R_SESS=<session-cookie>
 
 ### Test 7: Confirm multi-resource action delivers result message
 
-**Description:** Verifies that confirming a multi-resource action results in the "Confirmed" status and the follow-up result text message being delivered.
+**Description:** Verifies that confirming all sequential multi-resource confirmation dialogs (two Confirm clicks — one per resource) results in each dialog showing "Confirmed" status and the follow-up result text message being delivered in message box 5.
 
 **Preconditions:**
 - Logged in as `admin`
@@ -419,8 +429,9 @@ Cookie: R_SESS=<session-cookie>
 **Message ID sequence:**
 - Message 1: AI welcome
 - Message 2: User message
-- Message 3: AI multi-resource confirmation request
-- Message 4: AI result message ("ConfigMap and Secret created successfully.")
+- Message 3: AI confirmation request for first resource (ConfigMap `my-configmap`)
+- Message 4: AI confirmation request for second resource (Secret `my-secret`), appears after confirming message 3
+- Message 5: AI result message ("ConfigMap and Secret created successfully."), appears after confirming message 4
 
 **Steps:**
 1. Log in, open chat panel, wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
@@ -428,21 +439,31 @@ Cookie: R_SESS=<session-cookie>
 3. Enqueue the multi-resource mock (text: `["ConfigMap and Secret created successfully."]`).
 4. Type `Create a ConfigMap and a Secret` into `[data-testid="rancher-ai-ui-chat-input-textarea"]` and press `Enter`.
 5. Wait for `[data-testid="rancher-ai-ui-chat-message-box-3"]` to appear.
-6. Wait for `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` to be visible.
-7. Click `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]`.
-8. Wait for `[data-testid="rancher-ai-ui-chat-message-confirmation-confirmed"]` to appear.
+6. Wait for `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` to be visible inside message box 3.
+7. Click `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` inside message box 3 (confirms ConfigMap).
+8. Wait for `[data-testid="rancher-ai-ui-chat-message-confirmation-confirmed"]` to appear inside message box 3.
 9. Wait for `[data-testid="rancher-ai-ui-chat-message-box-4"]` to appear.
+10. Wait for `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` to be visible inside message box 4.
+11. Click `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]` inside message box 4 (confirms Secret).
+12. Wait for `[data-testid="rancher-ai-ui-chat-message-confirmation-confirmed"]` to appear inside message box 4.
+13. Wait for `[data-testid="rancher-ai-ui-chat-message-box-5"]` to appear.
+14. Within message box 5, wait for `[data-testid="rancher-ai-ui-chat-message-formatted-content"]` to be visible.
 
 **Assertions:**
 - `[data-testid="rancher-ai-ui-chat-message-confirmation-confirmed"]` is visible inside message box 3.
-- `[data-testid="rancher-ai-ui-chat-message-box-4"]` is visible.
-- Within message box 4, `[data-testid="rancher-ai-ui-chat-message-formatted-content"]` contains "ConfigMap and Secret created successfully."
+- `[data-testid="rancher-ai-ui-chat-message-confirmation-confirmed"]` is visible inside message box 4.
+- `[data-testid="rancher-ai-ui-chat-message-box-5"]` is visible.
+- Within message box 5, `[data-testid="rancher-ai-ui-chat-message-formatted-content"]` contains "ConfigMap and Secret created successfully."
+- The chat console textarea `[data-testid="rancher-ai-ui-chat-input-textarea"]` is re-enabled (no `disabled` attribute) after the result message is received.
 
 **Selectors:**
+- `[data-testid="rancher-ai-ui-chat-message-box-3"]`
+- `[data-testid="rancher-ai-ui-chat-message-box-4"]`
+- `[data-testid="rancher-ai-ui-chat-message-box-5"]`
 - `[data-testid="rancher-ai-ui-chat-message-confirmation-confirm-button"]`
 - `[data-testid="rancher-ai-ui-chat-message-confirmation-confirmed"]`
-- `[data-testid="rancher-ai-ui-chat-message-box-4"]`
 - `[data-testid="rancher-ai-ui-chat-message-formatted-content"]`
+- `[data-testid="rancher-ai-ui-chat-input-textarea"]`
 
 **Screenshot:** `tool-confirmation-mcp-test-7-multi-resource-confirm`
 
@@ -505,5 +526,6 @@ Cookie: R_SESS=<session-cookie>
 - The confirmation dialog uses `v-if` on `props.value.status === ConfirmationStatus.Pending` to show/hide buttons — so buttons are fully removed from the DOM (not just hidden) after confirm or cancel.
 - Message IDs are sequential from 1, incremented per message. The welcome AI message is always ID 1 in a fresh chat.
 - The `tool.args` field can be either a plain object (single resource) or an array of objects (multiple resources). Both trigger the confirmation dialog.
+- When `tool.args` is an array, each resource is confirmed **sequentially**: the first resource appears as a confirmation dialog in message box 3; after the user clicks Confirm, the second resource appears in message box 4, and so on. The final AI result text message appears only after all resources in the sequence have been confirmed.
 - After confirming or canceling, the mock service delivers the `text.chunks` content as the next AI message.
 - The session cookie (`R_SESS`) must be passed when making requests to the LLM mock service proxy URL.
