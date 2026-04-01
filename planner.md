@@ -293,3 +293,55 @@ For `history-panel` feature area:
 - Same plan as prior runs; all 12 selectors re-verified against source
 - All 8 test cases well-structured with all required fields
 - Runner dispatched (attempt 1)
+
+### PR #27 — context (2026-04-01, Run 23854298044)
+- **Verdict**: APPROVED (all checks passed)
+- All 9 test cases well-structured with all required fields (name/description/preconditions/steps/assertions/selectors/screenshot)
+- All 22 selectors verified against source components
+- Plan correctly identifies `rancher-ai-ui-context-tag-{value}` testid is on the inner `.tag-content` div (not root) — still works as CSS selector
+- Source link `data-testid` correctly uses Vue 3 attribute inheritance to root element of `ContextTag` (confirmed: no `inheritAttrs: false`)
+- i18n verified: `ai.context.none` = "No context" ✅, `ai.message.source.label` = "SOURCE" ✅
+- Dropdown item text `cluster:local` confirmed from `SelectContext.vue` (`{{ opt.tag }}:{{ contextLabel(opt) }}`)
+- Mock API: POST method ✅, correct Rancher proxy path ✅, R_SESS cookie auth documented ✅
+- Coverage: context panel display, no-context, deselect via dropdown, remove X, reset, context-in-message, suggestions, suggestion click, source links
+- Runner dispatched (attempt 1)
+
+### Verified Selectors (context feature area)
+- `.context-select` → `SelectContext.vue` (root div, `v-if="props.options.length > 0"`)
+- `.context-trigger` → `SelectContext.vue` (`rc-dropdown-trigger`)
+- `.context-trigger-text` → `SelectContext.vue` (span inside trigger)
+- `.context-dropdown` → `SelectContext.vue` (`rc-dropdown.context-dropdown`)
+- `.context-reset` → `SelectContext.vue` (`v-if="options.length !== selected.length"`)
+- `.no-context` → `SelectContext.vue` (`v-else` branch, `span.text-muted.no-context`)
+- `.chat-context` → `Context.vue` (root div, gets `.disabled-panel` when disabled)
+- `[data-testid="rancher-ai-ui-context-tag-{valueLabel||value}"]` → `ContextTag.vue` inner `.tag-content` div
+- `button.vs__deselect` → `ContextTag.vue` (v-if: `removeEnabled=true`)
+- `.vs__selected.tag` → `ContextTag.vue` root element (both classes present)
+- `.user-context` → `ContextTag.vue` (`:class="{user-context: type==='user'}"` on root)
+- `.chat-msg-user-context-tags` → `components/message/index.vue`
+- `.chat-msg-user-context-tag` → `components/message/index.vue`
+- `.suggestions-container` → `Suggestions.vue` (root div)
+- `[data-testid="rancher-ai-ui-chat-message-suggestion-{N}"]` → `Suggestions.vue` (on `RcButton`, 0-based)
+- `.chat-source-container` → `SourceLinks.vue` (root div)
+- `.chat-msg-source-label` → `SourceLinks.vue` (i18n: "SOURCE")
+- `[data-testid="rancher-ai-ui-chat-message-source-link-{N}"]` → `SourceLinks.vue` (attr inheritance to root of `ContextTag`)
+
+## Component Mapping (context)
+
+| Feature Area | Key Components |
+|---|---|
+| `context` | `components/context/SelectContext.vue`, `components/context/ContextTag.vue`, `components/panels/Context.vue`, `composables/useContextComposable.ts`, `store/context.ts`, `components/message/Suggestions.vue`, `components/message/SourceLinks.vue`, `components/message/index.vue` |
+
+## Context Feature Notes
+- Cluster context tag: `{ tag: 'cluster', value: 'local', valueLabel: 'local', description: ..., icon: 'icon-cluster' }`
+- Context only shown when on cluster path (`/c/<cluster-name>/...`); hidden on `/home`
+- Dropdown item text format: `{opt.tag}:{contextLabel(opt)}` e.g. `cluster:local`
+- Source link data-testid is on root `div.vs__selected.tag` via Vue 3 attr inheritance (NOT on inner `.tag-content` div which has `rancher-ai-ui-context-tag-{label}` testid)
+- `ContextTag.vue` does NOT use `inheritAttrs: false` → fallthrough attrs go to root element
+
+## i18n Verified (context)
+- `ai.context.none` = `No context`
+- `ai.context.add` = (Add context trigger label)
+- `ai.context.reset` = (Reset button text)
+- `ai.message.source.label` = `SOURCE`
+- `ai.message.suggestions.label` = (Suggestions header, line 18 shows 'Here are a few suggestions based on your context:')
