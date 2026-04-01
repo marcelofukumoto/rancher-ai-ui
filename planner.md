@@ -235,40 +235,35 @@ For `history-panel` feature area:
 - All 8 test cases well-structured with all required fields
 - Runner dispatched (attempt 1)
 
-### PR #25 — message-source-links (2026-04-01, Run 23826171752)
-- **Verdict**: APPROVED (all checks passed, attempt 1)
-- All 8 test cases well-structured with all required fields (name/description/preconditions/steps/assertions/selectors/screenshot)
-- All 11 selectors verified against source components
-- Plan correctly identifies that `chat-source-container` is conditionally rendered via `v-if="props.message.sourceLinks?.length"` in `message/index.vue` (not in `SourceLinks.vue` itself) — DOM-absent assertion is valid
-- Chevron click target `.chat-msg-source-label .icon` verified: `<i class="icon icon-sm">` with dynamic `:class` binding for `icon-chevron-up` / `icon-chevron-down`
-- `window.open` stub ordering correct: after `HomePagePo.goTo()`, before `chat.open()`
-- Mock `text: []` array format confirmed correct: composable processes each chunk independently, `startsWith(Tag.DocLinkStart) && endsWith(Tag.DocLinkEnd)` per chunk
-- `THRESHOLD=7` in `action/index.vue` confirmed, 8 resources → 7 shown + 1 in remaining
-- Action button data-testid uses `resource.name`: `rancher-ai-ui-chat-message-action-button-${resource.name}` → prefix match `[data-testid^="rancher-ai-ui-chat-message-action-button-"]` works correctly
-- i18n: "RELATED RESOURCES" (`ai.message.relatedResourcesActions.label`), ICU plural `=1 { and {count} more resource }`, "Show Less" all verified
+### PR #24 — chat-panel-menu (2026-04-01, Run 23826031524)
+- **Verdict**: APPROVED (all checks passed — re-verification after plan-fixer fixed HTTP method)
+- **Fix confirmed**: Mock push endpoint changed from `PUT` to `POST` in all 3 locations (Mock Data Setup, Test 4 Mock Setup, Implementation Notes)
+- All 12 selectors re-verified against source (same as PR #21 which was previously APPROVED)
+- All 9 i18n texts verified (3 menu options + 6 shortcut actions)
+- Plan correctly identifies `rancher-ai-ui-chat-menu-button` does NOT exist; uses `.chat-console-menu-container button`
+- Plan correctly uses Rancher proxy path for mock API (not localhost:1080)
 - Runner dispatched (attempt 1)
 
-### Verified Selectors (message-source-links feature area)
-- `.chat-source-container` → root `<div>` of `SourceLinks.vue` (component conditionally rendered in `message/index.vue` via `v-if="props.message.sourceLinks?.length"`)
-- `.chat-msg-source-label` → label row div in `SourceLinks.vue`
-- `.chat-msg-source-label .icon` → `<i class="icon icon-sm">` click target with `@click="isCollapsed = !isCollapsed"` in `SourceLinks.vue`
-- `.chat-msg-source-tags` → `v-if="!isCollapsed"` div wrapping link tags in `SourceLinks.vue`
-- `.icon-chevron-up` / `.icon-chevron-down` → dynamic `:class` binding on `<i>` (when not collapsed: `icon-chevron-up text-label`; when collapsed: `icon-chevron-down text-label`)
-- `rancher-ai-ui-chat-message-source-link-{index}` → on `ContextTag` component in `SourceLinks.vue` (0-indexed)
-- `.chat-actions-container` → root div of `components/message/action/index.vue`
-- `.chat-msg-action-title` → title div in `action/index.vue` (contains label from i18n)
-- `.chat-msg-actions-more` → toggle span in `action/index.vue` (only rendered when `remaining.length > 0`)
-- `rancher-ai-ui-chat-message-action-button-{resource.name}` → on outer `<div>` in `Action.vue` (v-if: `props.value.type === ActionType.Button`)
+### Verified Selectors (multi-agent feature area)
+- `rancher-ai-ui-multi-agent-select` → `components/agent/SelectAgent.vue` (root div)
+- `.selected-agent-name` → `components/agent/SelectAgent.vue` (trigger display label)
+- `rancher-ai-ui-multi-agent-select-option-__adaptive__` → `SelectAgent.vue` (dynamic: `ADAPTIVE_MODE_ID = '__adaptive__'`)
+- `rancher-ai-ui-multi-agent-select-option-{name}` → `SelectAgent.vue` (`:data-testid="\`rancher-ai-ui-multi-agent-select-option-${opt.name}\`"`)
+- `.icon-checkmark` with `.hidden` class → `SelectAgent.vue` (`:class="{ hidden: opt.name !== selectedAgentName }"`, uses CSS `visibility: hidden`)
+- `rancher-ai-ui-chat-message-selected-agent-label-{agentName}` → `components/message/index.vue` (`:data-testid="\`rancher-ai-ui-chat-message-selected-agent-label-${ props.message.agentMetadata?.agent?.name }\`"`)
 
-## Component Mapping (additions)
-| `message-source-links` | `components/message/SourceLinks.vue`, `components/message/action/index.vue`, `components/message/action/Action.vue`, `components/message/index.vue` |
+## Component Mapping (multi-agent)
 
-## Coverage Guidelines (additions)
+| Feature Area | Key Components |
+|---|---|
+| `multi-agent` | `components/agent/SelectAgent.vue`, `components/panels/Console.vue` (v-if for SelectAgent), `components/message/index.vue` (agent label), `composables/useAgentComposable.ts`, `composables/useChatMessageComposable.ts` |
 
-For `message-source-links` feature area:
-- Test source links collapse/expand toggle (v-if, not CSS visibility)
-- Test window.open stub for source link click (stub before chat.open())
-- Test relatedResourcesActions label visibility with i18n key `ai.message.relatedResourcesActions.label`
-- Test THRESHOLD=7 behavior: 7 visible initially, "and N more resource" toggle, all visible after click, "Show Less" returns to 7
-- Use `text: [...]` array format with each `<mcp-doclink>` or `<mcp-response>` as a separate array element
-- All resource objects in mcp-response arrays need: `kind`, `namespace`, `name`, `cluster`, `type` fields to pass `validateActionResource`
+## Multi-Agent Behavior Notes
+- `SelectAgent.vue` is rendered via `v-if="props.agents.length > 1"` in `Console.vue` — absent in DOM with single agent
+- `ADAPTIVE_MODE_ID = '__adaptive__'` → emits `''` (empty string) on selection to `useAgentComposable`
+- Agent label on assistant messages: gated by `v-if="props.message.role === RoleEnum.Assistant && props.message.agentMetadata?.agent"`
+- `agentMetadata` comes from `Tag.AgentMetadataStart` tagged string in WS stream (format: `{"agentName":"rancher","selectionMode":"auto|manual"}`)
+- i18n: `ai.agents.items.default.displayName` = `Adaptive Agent Selection`, `ai.agents.selectionMode.auto` = `(Adaptive Mode)`
+- Mock push format: `{ agent: "rancher", text: { chunks: [...] } }` for adaptive; `{ agent: null, text: {...} }` for manual
+- Mock API endpoint: `POST /v1/control/push` via Rancher proxy at `https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push`
+- Agent config creation via API: `POST /v1/ai.cattle.io.aiagentconfig` requires CSRF token from `CSRF` cookie
