@@ -169,31 +169,6 @@ await page.goto('https://localhost:8005', { waitUntil: 'domcontentloaded' });
 
 ---
 
-## message-summary Feature — ALL 6 TESTS PASSED (PR #29, Attempt 2, 2026-04-17) ✅ RESOLVED
-
-### Summary
-- All 6 tests in `message-summary.spec.ts` passed on Attempt 2
-- Attempt 1 had a failure on Test 2 (overflow/visibility); fixed by Attempt 2
-- Total spec duration: ~32s for 6 tests
-
-### Test Coverage (confirmed working)
-1. Badge message shows summary content with "See More" button
-2. Clicking "See More" expands the full message text *(was failing in Attempt 1 — fixed)*
-3. Clicking "See Less" collapses back to summary
-4. Summary HTML renders resource name in bold
-5. Regular typed user messages show full content without "See More"
-6. AI assistant response message has no "See More" button
-
-### Confirmed Fix for Test 2 (overflow visibility)
-- The fix involved allowing the expanded content to be visible after "See More" click despite parent `overflow: hidden` clipping
-- Effective approach: `.scrollIntoView()` before asserting visibility, or using `cy.wait(500)` after click to allow CSS transitions
-
-### Notes
-- Each test had a corresponding screenshot captured
-- `message-summary.spec.ts.mp4` video was also recorded
-
----
-
 ## message-source-links Feature — ALL 8 TESTS PASSED (PR #25, Attempt 1, 2026-04-01)
 
 ### Summary
