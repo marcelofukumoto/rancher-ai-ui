@@ -383,3 +383,36 @@ For `history-panel` feature area:
 - Direct chat flow (chat.open() then send): ID=1 welcome, ID=2 user typed, ID=3 AI response
 - `formattedContent` uses `v-if` (removed from DOM when hidden) → assert `.should('not.exist')` not `.should('be.hidden')`
 - `.chat-msg-user-expanded` class is ON the `rancher-ai-ui-chat-message-formatted-content` span itself
+
+### PR #30 — multi-agent (2026-04-17, Run 24565576242)
+- **Verdict**: APPROVED (all checks passed on attempt 1)
+- All 8 test cases well-structured with all required fields (name/description/preconditions/steps/assertions/selectors/screenshot)
+- All 11 selectors verified against source components
+- `rancher-ai-ui-multi-agent-select` → `SelectAgent.vue` (root div, data-testid)
+- `rancher-ai-ui-multi-agent-select-option-{name}` → `SelectAgent.vue` dynamic via `opt.name`
+- `ADAPTIVE_MODE_ID = '__adaptive__'` confirmed in source
+- `.agent-trigger` → class on `rc-dropdown-trigger` in `SelectAgent.vue`
+- `.selected-agent-name` → span class in `SelectAgent.vue`
+- `.icon-checkmark.hidden` → `:class="{ hidden: opt.name !== selectedAgentName }"` → CSS `visibility: hidden` (NOT `display: none`; element always in DOM)
+- `rancher-ai-ui-chat-message-selected-agent-label-{name}` → `message/index.vue` line 149 (dynamic via `agentMetadata?.agent?.name`)
+- `agent: null` in mock push = manual mode (no `(Adaptive Mode)` suffix); `agent: "rancher"` = adaptive mode
+- `__adaptive__` option only rendered when `activeAgentNames.length > 1` (multiple Active agents, not just configs)
+- Mock API: `{ "agent": "rancher", "text": { "chunks": [...] } }` for adaptive; `{ "agent": null, "text": { "chunks": [...] } }` for manual
+- i18n: `ai.agents.selectionMode.auto` = `(Adaptive Mode)`, `manual` = `` (empty), `ai.agents.items.default.displayName` = `Adaptive Agent Selection`
+- Runner dispatched (attempt 1)
+
+### Verified Selectors (multi-agent feature area)
+- `rancher-ai-ui-multi-agent-select` → `components/agent/SelectAgent.vue` (root div)
+- `rancher-ai-ui-multi-agent-select-option-{name}` → `SelectAgent.vue` (dynamic on `rc-dropdown-item`)
+- `.agent-trigger` → `SelectAgent.vue` (class on `rc-dropdown-trigger`)
+- `.selected-agent-name` → `SelectAgent.vue` (span inside trigger)
+- `.icon-checkmark.hidden` → `SelectAgent.vue` (`:class="{hidden: opt.name !== selectedAgentName}"` — CSS visibility)
+- `rancher-ai-ui-chat-message-selected-agent-label-{agentName}` → `components/message/index.vue` (v-if: role === Assistant && agentMetadata?.agent)
+
+## Coverage Guidelines (multi-agent feature area)
+- Test dropdown visibility gate: `v-if="props.agents.length > 1"` in Console.vue
+- Test `__adaptive__` option gate: only shown when `activeAgentNames.length > 1`
+- Checkmark uses CSS class `.hidden` (visibility:hidden) — always in DOM, use `.toHaveClass('hidden')` not `.toBeVisible()`
+- `agent: null` → manual mode → label shows "Agent: {name}" without "(Adaptive Mode)"
+- `agent: "rancher"` → adaptive → label shows "Agent: Rancher (Adaptive Mode)"
+- Agent label data-testid uses `agentMetadata?.agent?.name` (not displayName)
