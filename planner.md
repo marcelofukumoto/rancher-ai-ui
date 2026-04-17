@@ -28,6 +28,16 @@
 - **NOTE**: `rancher-ai-ui-chat-menu-button` (from quick reference) does NOT exist in source — use CSS selectors instead
 - `Header.vue` does NOT pass `disabled` prop to `ChatPanelMenu`, so menu is always enabled regardless of chat state
 
+### Verified Selectors (message-summary feature area)
+- `rancher-ai-ui-chat-message-box-{N}` → `components/panels/Messages.vue` line 201 (dynamic by message.id)
+- `rancher-ai-ui-chat-message-formatted-content` → `components/message/index.vue` line 175 (`v-if="formattedMessageContent && (!summaryContent || showCompleteMessage)"`)
+- `.inline-button` → `components/message/index.vue` lines 206 (thinking toggle), 215 (summary See More/Less toggle, `v-if="!!summaryContent"`)
+- `.chat-msg-user-expanded` → `components/message/index.vue` line 177 (class on formatted-content span when `summaryContent && showCompleteMessage`)
+- `rancher-ai-ui-sliding-badge` → `handlers/hooks/overlay/badge-sliding.ts` line 173
+- i18n: `ai.message.actions.showCompleteMessage` → `See More`; `ai.message.actions.hideCompleteMessage` → `See Less` (en-us.yaml lines 53–54)
+- i18n: `ai.message.template.summary.analyseKindAndTroubleshoot` → `'Please analyse the {kind} "<strong>{name}</strong>" and troubleshoot any problems.'` (en-us.yaml line 61)
+- `formattedContent` element uses `v-if` (not `v-show`) → assert with `.should('not.exist')` when hidden
+
 ### Verified Selectors (message-bubble-actions feature area)
 - `.chat-msg-bubble` → `components/message/index.vue` (class on bubble div)
 - `.chat-msg-bubble-actions` → `components/message/index.vue` (v-if="!props.disabled"; CSS opacity:0 by default, 1 on :hover)
@@ -306,6 +316,19 @@ For `history-panel` feature area:
 - Coverage: context panel display, no-context, deselect via dropdown, remove X, reset, context-in-message, suggestions, suggestion click, source links
 - Runner dispatched (attempt 1)
 
+### PR #29 — message-summary (2026-04-17, Run 24559360985)
+- **Verdict**: APPROVED (all checks passed on attempt 1)
+- All 6 test cases well-structured with all required fields (name/description/preconditions/steps/assertions/selectors/screenshot)
+- All 7 selectors verified against source components (5 unique data-testid + 2 CSS class selectors)
+- Badge flow message ID sequence correctly documented: ID=1 user badge msg, ID=2 AI response (no welcome in badge flow)
+- Direct chat flow: ID=1 welcome, ID=2 user typed, ID=3 AI response
+- `.inline-button` scoped with `.contains()` to disambiguate from thinking toggle — correct approach
+- `formattedContent` hidden via `v-if` (not `v-show`) → `.should('not.exist')` assertions correct
+- `.chat-msg-user-expanded` class is ON the `rancher-ai-ui-chat-message-formatted-content` span itself (not the wrapper)
+- i18n verified: `See More`/`See Less` at en-us.yaml lines 53–54; summary template at line 61
+- Coverage: summary display, expand, collapse, HTML bold rendering, regular message (no See More), AI message (no See More)
+- Runner dispatched (attempt 1)
+
 ### Verified Selectors (context feature area)
 - `.context-select` → `SelectContext.vue` (root div, `v-if="props.options.length > 0"`)
 - `.context-trigger` → `SelectContext.vue` (`rc-dropdown-trigger`)
@@ -330,6 +353,7 @@ For `history-panel` feature area:
 
 | Feature Area | Key Components |
 |---|---|
+| `message-summary` | `components/message/index.vue`, `handlers/hooks/overlay/badge-sliding.ts`, `handlers/hooks/template-message.ts`, `composables/useChatMessageComposable.ts`, `store/chat.ts`, `cypress/e2e/po/hook.po.ts` |
 | `context` | `components/context/SelectContext.vue`, `components/context/ContextTag.vue`, `components/panels/Context.vue`, `composables/useContextComposable.ts`, `store/context.ts`, `components/message/Suggestions.vue`, `components/message/SourceLinks.vue`, `components/message/index.vue` |
 
 ## Context Feature Notes
@@ -345,3 +369,17 @@ For `history-panel` feature area:
 - `ai.context.reset` = (Reset button text)
 - `ai.message.source.label` = `SOURCE`
 - `ai.message.suggestions.label` = (Suggestions header, line 18 shows 'Here are a few suggestions based on your context:')
+
+## Coverage Guidelines (message-summary feature area)
+- Test expand/collapse cycle fully (show summary → See More → See Less → back to summary)
+- Test HTML rendering via `v-clean-html` (bold `<strong>` tag for resource name)
+- Test regular typed messages: no `summaryContent` → `formattedContent` shown directly, no `.inline-button`
+- Test AI assistant messages: no `summaryContent` → full content visible, no `.inline-button`
+- Document message ID sequences separately for badge flow vs. direct chat flow
+- Scope `.inline-button` with `.contains('See More'/'See Less')` to avoid ambiguity with thinking toggle
+
+## Message Summary Behavior Notes
+- Badge flow (chat closed → badge click → chat opens): `onopen()` detects `messageBox.value` set → skips welcome → sends badge message directly → ID=1 user badge msg, ID=2 AI response
+- Direct chat flow (chat.open() then send): ID=1 welcome, ID=2 user typed, ID=3 AI response
+- `formattedContent` uses `v-if` (removed from DOM when hidden) → assert `.should('not.exist')` not `.should('be.hidden')`
+- `.chat-msg-user-expanded` class is ON the `rancher-ai-ui-chat-message-formatted-content` span itself
