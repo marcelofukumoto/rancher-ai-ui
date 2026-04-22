@@ -350,7 +350,7 @@ Cookie: R_SESS=<session-token>
 ### Test 7: Chat panel menu opens keyboard shortcuts help popup
 
 **Description**: Verifies that clicking the chat panel's action menu button and
-then selecting "Keyboard shortcuts" reveals the shortcuts help popup listing
+then selecting "View Keyboard Shortcuts" reveals the shortcuts help popup listing
 all available shortcuts.
 
 **Preconditions**: Logged in; chat panel is open and ready.
@@ -364,13 +364,12 @@ all available shortcuts.
    (use selector `.chat-console-menu-container .icon-actions` or
    `.chat-console-menu-container button`).
 5. Wait up to 2 seconds for the dropdown menu to appear.
-6. Look for a dropdown item containing the text `Keyboard shortcuts` (or the
-   translated equivalent) and click it.
+6. Look for a dropdown item containing the text `View Keyboard Shortcuts` and click it.
 7. Wait up to 2 seconds for the keyboard shortcuts popover to appear.
 
 **Assertions**:
 - The popover/popup is visible and contains a section with title matching
-  `Keyboard shortcuts` (or `Shortcuts`).
+  `Keyboard Shortcuts` (or `Shortcuts`).
 - The popup lists at least the following actions:
   - Open/Close chat (Alt K or ⌘ Shift K)
   - New chat (Ctrl Shift O or ⌘ Shift O)
@@ -380,7 +379,7 @@ all available shortcuts.
 
 **Selectors**:
 - `.chat-console-menu-container .icon-actions` (menu trigger button)
-- Text `Keyboard shortcuts` (dropdown item label)
+- Text `View Keyboard Shortcuts` (dropdown item label)
 - `.shortcuts` (popover content container)
 - `.shortcuts-title` (shortcuts popup title)
 - `.shortcuts-row` (individual shortcut rows)
