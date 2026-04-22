@@ -1,0 +1,249 @@
+diff --git a/cypress/e2e/tests/features/mcp-test-plan-keyboard-shortcuts.md b/cypress/e2e/tests/features/mcp-test-plan-keyboard-shortcuts.md
+index d0f3622..9a8f83a 100644
+--- a/cypress/e2e/tests/features/mcp-test-plan-keyboard-shortcuts.md
++++ b/cypress/e2e/tests/features/mcp-test-plan-keyboard-shortcuts.md
+@@ -108,30 +108,49 @@ chat panel.
+ with messages is active discards the current session and starts a fresh chat
+ with only the welcome message.
+ 
+-**Preconditions**: Logged in; chat panel is open and has at least one
+-user-sent message and one assistant reply.
++**Preconditions**: Logged in; chat panel is closed.
++
++**Mock LLM Setup** (enqueue ALL mocks BEFORE opening the chat with Alt+K):
+ 
+-**Mock LLM Setup** (enqueue before sending user message):
++The chat triggers a welcome LLM call in `onopen()` before `chat-panel-ready`
++appears. After `Ctrl+Shift+O`, a second welcome call is triggered. Push **3
++mocks** before pressing `Alt+K`:
+ 
+ ```http
++# Mock 1 — consumed by the initial welcome message on chat open
+ POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
+ Content-Type: application/json
+ Cookie: R_SESS=<session-token>
+ 
+-{
+-  "agent": "rancher",
+-  "text": {
+-    "chunks": ["Hello from the mock agent."]
+-  }
+-}
++{"agent": "rancher", "text": {"chunks": ["Welcome to Rancher AI."]}}
++```
++
++```http
++# Mock 2 — consumed by the user message response
++POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
++Content-Type: application/json
++Cookie: R_SESS=<session-token>
++
++{"agent": "rancher", "text": {"chunks": ["Hello from the mock agent."]}}
++```
++
++```http
++# Mock 3 — consumed by the second welcome message after Ctrl+Shift+O opens fresh chat
++POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
++Content-Type: application/json
++Cookie: R_SESS=<session-token>
++
++{"agent": "rancher", "text": {"chunks": ["Welcome to your new chat."]}}
+ ```
+ 
+ **Steps**:
+ 1. Navigate to `https://localhost:8005` and log in.
+-2. Press `Alt+K` to open the chat panel.
+-3. Wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
+-4. Enqueue a mock LLM response via HTTP POST to the Rancher proxy push endpoint
+-   (see Mock LLM Setup above; include the `R_SESS` cookie from the browser session).
++2. Enqueue all 3 mock LLM responses via HTTP POST to the Rancher proxy push
++   endpoint (see Mock LLM Setup above; include the `R_SESS` cookie obtained
++   from `page.context().cookies()`). Push mock 1, then mock 2, then mock 3 in
++   order — **before pressing Alt+K**.
++3. Press `Alt+K` to open the chat panel.
++4. Wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
+ 5. Click `[data-testid="rancher-ai-ui-chat-input-textarea"]` and type
+    `Test message for new-chat shortcut`.
+ 6. Press `Enter` to send the message.
+@@ -139,7 +158,7 @@ Cookie: R_SESS=<session-token>
+    second message box to be visible and no longer streaming).
+ 8. Press `Ctrl+Shift+O`.
+ 9. Wait up to 5 seconds for `[data-testid="rancher-ai-ui-chat-panel-ready"]`
+-   to appear (the chat reinitialises).
++   to appear (the chat reinitialises with mock 3 consumed by the new welcome).
+ 
+ **Assertions**:
+ - After `Ctrl+Shift+O`, the chat console shows **only one message** (the
+@@ -195,29 +214,39 @@ and pressing it again closes the panel.
+ **Description**: Verifies that pressing `Ctrl+Shift+C` copies the text of the
+ most recent assistant message into the system clipboard.
+ 
+-**Preconditions**: Logged in; chat has at least one completed assistant reply.
++**Preconditions**: Logged in; chat panel is closed.
++
++**Mock LLM Setup** (enqueue ALL mocks BEFORE opening the chat with Alt+K):
+ 
+-**Mock LLM Setup** (enqueue before sending user message):
++The chat triggers a welcome LLM call in `onopen()` before `chat-panel-ready`
++appears. Push **2 mocks** before pressing `Alt+K`:
+ 
+ ```http
++# Mock 1 — consumed by the initial welcome message on chat open
+ POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
+ Content-Type: application/json
+ Cookie: R_SESS=<session-token>
+ 
+-{
+-  "agent": "rancher",
+-  "text": {
+-    "chunks": ["Clipboard test content from mock agent."]
+-  }
+-}
++{"agent": "rancher", "text": {"chunks": ["Welcome to Rancher AI."]}}
++```
++
++```http
++# Mock 2 — consumed by the user message response
++POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
++Content-Type: application/json
++Cookie: R_SESS=<session-token>
++
++{"agent": "rancher", "text": {"chunks": ["Clipboard test content from mock agent."]}}
+ ```
+ 
+ **Steps**:
+ 1. Navigate to `https://localhost:8005` and log in.
+-2. Press `Alt+K` to open the chat panel.
+-3. Wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
+-4. Enqueue the mock LLM response via HTTP POST to the Rancher proxy push endpoint
+-   (see Mock LLM Setup above; include the `R_SESS` cookie from the browser session).
++2. Enqueue both mock LLM responses via HTTP POST to the Rancher proxy push
++   endpoint (see Mock LLM Setup above; include the `R_SESS` cookie obtained
++   from `page.context().cookies()`). Push mock 1 then mock 2 — **before
++   pressing Alt+K**.
++3. Press `Alt+K` to open the chat panel.
++4. Wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
+ 5. Click `[data-testid="rancher-ai-ui-chat-input-textarea"]` and type
+    `Please give me something to copy`.
+ 6. Press `Enter` to send the message.
+@@ -247,30 +276,49 @@ Cookie: R_SESS=<session-token>
+ delete-chat confirmation dialog and, after confirmation, the current chat is
+ deleted and a fresh chat is started.
+ 
+-**Preconditions**: Logged in; chat panel is open with at least one user message
+-sent.
++**Preconditions**: Logged in; chat panel is closed.
++
++**Mock LLM Setup** (enqueue ALL mocks BEFORE opening the chat with Alt+K):
+ 
+-**Mock LLM Setup** (enqueue before sending user message):
++The chat triggers a welcome LLM call in `onopen()` before `chat-panel-ready`
++appears. After delete+confirm, a new empty chat loads triggering another
++welcome message. Push **3 mocks** before pressing `Alt+K`:
+ 
+ ```http
++# Mock 1 — consumed by the initial welcome message on chat open
+ POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
+ Content-Type: application/json
+ Cookie: R_SESS=<session-token>
+ 
+-{
+-  "agent": "rancher",
+-  "text": {
+-    "chunks": ["Delete test response."]
+-  }
+-}
++{"agent": "rancher", "text": {"chunks": ["Welcome to Rancher AI."]}}
++```
++
++```http
++# Mock 2 — consumed by the user message response
++POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
++Content-Type: application/json
++Cookie: R_SESS=<session-token>
++
++{"agent": "rancher", "text": {"chunks": ["Delete test response."]}}
++```
++
++```http
++# Mock 3 — consumed by the welcome message after delete creates a fresh chat
++POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
++Content-Type: application/json
++Cookie: R_SESS=<session-token>
++
++{"agent": "rancher", "text": {"chunks": ["Welcome to your new chat."]}}
+ ```
+ 
+ **Steps**:
+ 1. Navigate to `https://localhost:8005` and log in.
+-2. Press `Alt+K` to open the chat panel.
+-3. Wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
+-4. Enqueue a mock LLM response via HTTP POST to the Rancher proxy push endpoint
+-   (see Mock LLM Setup above; include the `R_SESS` cookie from the browser session).
++2. Enqueue all 3 mock LLM responses via HTTP POST to the Rancher proxy push
++   endpoint (see Mock LLM Setup above; include the `R_SESS` cookie obtained
++   from `page.context().cookies()`). Push mock 1, then mock 2, then mock 3 in
++   order — **before pressing Alt+K**.
++3. Press `Alt+K` to open the chat panel.
++4. Wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
+ 5. Click `[data-testid="rancher-ai-ui-chat-input-textarea"]` and type
+    `Message before deletion`.
+ 6. Press `Enter` to send.
+@@ -279,7 +327,7 @@ Cookie: R_SESS=<session-token>
+ 9. Wait up to 3 seconds for a deletion confirmation modal to appear.
+ 10. Click the confirmation button
+     `[data-testid="prompt-remove-confirm-button"]`.
+-11. Wait up to 5 seconds for the chat to reset.
++11. Wait up to 5 seconds for the chat to reset (mock 3 consumed by new welcome).
+ 
+ **Assertions**:
+ - A confirmation modal appears after pressing `Ctrl+Shift+Backspace`.
+@@ -343,7 +391,7 @@ all available shortcuts.
+ 
+ ### Test 8: Chat panel menu navigates to AI settings page
+ 
+-**Description**: Verifies that clicking the "AI settings" / Config option in
++**Description**: Verifies that clicking the "Edit Configuration" option in
+ the chat panel menu navigates the user to the AI Assistant settings page.
+ 
+ **Preconditions**: Logged in; chat panel is open and ready.
+@@ -354,8 +402,8 @@ the chat panel menu navigates the user to the AI Assistant settings page.
+ 3. Wait for `[data-testid="rancher-ai-ui-chat-panel-ready"]`.
+ 4. Click the actions menu button (`.chat-console-menu-container .icon-actions`).
+ 5. Wait for the dropdown menu to appear.
+-6. Look for the dropdown item containing the text `AI settings` (or `Config`
+-   or `Settings`) and click it.
++6. Look for the dropdown item containing the text `Edit Configuration` and
++   click it.
+ 7. Wait up to 5 seconds for page navigation to complete.
+ 
+ **Assertions**:
+@@ -364,7 +412,7 @@ the chat panel menu navigates the user to the AI Assistant settings page.
+ 
+ **Selectors**:
+ - `.chat-console-menu-container .icon-actions`
+-- Text matching `AI settings` or `Config` (dropdown item)
++- Text `Edit Configuration` (dropdown item — actual label from en-us.yaml)
+ - CSS/text `AI Assistant Configuration` (page heading)
+ 
+ **Screenshot**: `keyboard-shortcuts-mcp-test-8-menu-config-navigation`
+@@ -374,8 +422,17 @@ the chat panel menu navigates the user to the AI Assistant settings page.
+ ## Mock Data Setup
+ 
+ For tests that send messages (Tests 3, 5, 6), enqueue mock LLM responses
+-**before** sending the user message. Use an HTTP POST request through the
+-Rancher proxy (direct `localhost:1080` access is not available):
++**BEFORE pressing Alt+K** (before opening the chat panel). The welcome LLM
++call fires in `onopen()` when the WebSocket connects — before `chat-panel-ready`
++appears — so any mock pushed after `chat-panel-ready` will be too late.
++
++**Always push N+1 mocks** where N is the number of user messages:
++- Test 5: 2 mocks (1 welcome + 1 user message reply)
++- Test 3: 3 mocks (1 welcome + 1 user message reply + 1 welcome after Ctrl+Shift+O)
++- Test 6: 3 mocks (1 welcome + 1 user message reply + 1 welcome after delete)
++
++Use HTTP POST requests through the Rancher proxy (direct `localhost:1080` access
++is not available):
+ 
+ ```
+ POST https://localhost:8005/api/v1/namespaces/cattle-ai-agent-system/services/http:llm-mock:80/proxy/v1/control/push
