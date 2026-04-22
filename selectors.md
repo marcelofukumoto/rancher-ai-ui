@@ -23,7 +23,7 @@ Verified selector → component mappings. Organized by feature area.
 ### chat-panel-menu
 
 - `.chat-console-menu-container` → `components/header/ChatPanelMenu.vue` (wrapper div)
-- `.chat-console-menu-container button` → `components/header/ChatPanelMenu.vue` (`rc-dropdown-trigger`)
+- `.chat-console-menu-container button` or `.chat-console-menu-container .icon-actions` → `components/header/ChatPanelMenu.vue` (`rc-dropdown-trigger` wrapping `<i class="icon icon-actions">`, line 77)
 - `.shortcuts` → `components/header/KeyboardShortcuts.vue`
 - `.shortcuts-title` → `components/header/KeyboardShortcuts.vue`
 - `.shortcuts-row` → `components/header/KeyboardShortcuts.vue` (each shortcut entry)

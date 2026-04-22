@@ -78,3 +78,10 @@ await page.goto('https://localhost:8005', { waitUntil: 'domcontentloaded' });
 ## Agent Config Creation (API)
 
 - `POST /v1/ai.cattle.io.aiagentconfig` requires CSRF token from `CSRF` cookie
+
+## Welcome Message Timing (useChatMessageComposable.ts onopen)
+
+- Welcome message is sent to LLM in `onopen()` handler (line ~250) — fires on WS connection, **before** `isChatInitialized` is set and **before** `chat-panel-ready` appears.
+- `chat-panel-ready` appears when `isChatInitialized && ws.readyState === 1` (Chat.vue line 395). This is set when chatId metadata is received — BEFORE the welcome response arrives from LLM.
+- Always enqueue mocks **before** pressing `Alt+K` (before opening the chat), not after `chat-panel-ready`.
+- After `Ctrl+Shift+O` (new chat) or delete, a fresh chat opens → triggers another welcome message → needs another mock.

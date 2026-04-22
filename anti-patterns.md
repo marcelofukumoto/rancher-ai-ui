@@ -49,3 +49,8 @@ Things that don't work. Each entry includes the wrong approach and the correct a
 - Always dispatch fixer when outcome=failure even without error details
 - Don't read PNG files; don't skip fixer when log is empty but outcome=failure
 - Don't assume selector fix is enough when ALL tests fail (may be import/module error)
+
+## Menu Item Labels (keyboard-shortcuts / ChatPanelMenu)
+
+- Do NOT use `AI settings` to find the config menu item — actual label is `Edit Configuration` (en-us.yaml line 219). Use `"Edit Configuration"` as primary text.
+- Do NOT use `Keyboard shortcuts` (lowercase s) as primary text — actual label is `View Keyboard Shortcuts` (en-us.yaml line 221). Substring match on `Keyboard Shortcuts` works.
