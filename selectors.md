@@ -89,7 +89,6 @@ Verified selector → component mappings. Organized by feature area.
 
 - `.context-select` → `SelectContext.vue` (`v-if="props.options.length > 0"`)
 - `.context-trigger` → `SelectContext.vue` (`rc-dropdown-trigger`)
-- `.context-trigger-text` → `SelectContext.vue`
 - `.context-dropdown` → `SelectContext.vue`
 - `.context-reset` → `SelectContext.vue` (`v-if="options.length !== selected.length"`)
 - `.no-context` → `SelectContext.vue` (`v-else`, `span.text-muted`)
@@ -118,3 +117,4 @@ Verified selector → component mappings. Organized by feature area.
 | `multi-agent` | `SelectAgent.vue`, `Console.vue`, `message/index.vue`, `useAgentComposable.ts` |
 | `message-summary` | `message/index.vue`, `badge-sliding.ts`, `template-message.ts`, `useChatMessageComposable.ts` |
 | `context` | `SelectContext.vue`, `ContextTag.vue`, `Context.vue`, `useContextComposable.ts`, `Suggestions.vue`, `SourceLinks.vue` |
+| `keyboard-shortcuts` | `KeyboardShortcuts.vue`, `ChatPanelMenu.vue`, `useKeyboardShortcutsComposable.ts`, `dialog/DeleteChatCard.vue` |
