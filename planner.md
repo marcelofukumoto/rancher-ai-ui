@@ -14,7 +14,7 @@
 | `.context-trigger` | `SelectContext.vue` line 96 | On `<rc-dropdown-trigger>` |
 | `.context-dropdown` | `SelectContext.vue` line 89 | On `<rc-dropdown>` |
 | `.context-reset` | `SelectContext.vue` line 142 | Container div |
-| `.chat-context` | `Context.vue` line 27 | Root container, gets `.disabled-panel` class when disabled |
+| `.chat-context` | `Context.vue` line 26 | Root container, gets `.disabled-panel` class when disabled |
 | `.disabled-panel` | `Context.vue` | Added to `.chat-context` when `disabled=true` |
 | `rancher-ai-ui-context-tag-{valueLabel\|\|value}` | `ContextTag.vue` | Dynamic testid on inner div |
 | `rancher-ai-ui-chat-panel-ready` | `Chat.vue` | Dynamic: shows when `isChatInitialized && ws?.readyState === 1` |
@@ -38,6 +38,8 @@
 - Context panel: test "No context" fallback (Home page), cluster tag auto-selection, dropdown add/remove, reset button, disabled state, and context not sent when deselected.
 - Always verify mock LLM response is enqueued before `chat.sendMessage()`.
 - Use `cy.cleanChatHistory()` in `afterEach`.
+- `MessagePo.context(label).should('not.exist')` works for verifying deselected context because it searches page-wide; after tag deselection, no `rancher-ai-ui-context-tag-{label}` exists anywhere in the DOM.
+- Approved plan (context, Attempt 2): 8 test cases covering no-context home, cluster tag, dropdown open, remove/re-add tag, reset, disabled state, deselected context not sent.
 
 ## Page Objects
 
