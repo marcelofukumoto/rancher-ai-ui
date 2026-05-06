@@ -1,0 +1,43 @@
+diff --git a/cypress/e2e/tests/features/test-plan-context.md b/cypress/e2e/tests/features/test-plan-context.md
+index a1d0178..c4ad1b6 100644
+--- a/cypress/e2e/tests/features/test-plan-context.md
++++ b/cypress/e2e/tests/features/test-plan-context.md
+@@ -116,10 +116,10 @@ available context options (those already selected have a remove icon).
+ 2. Open the chat panel.
+ 3. Wait for `rancher-ai-ui-chat-panel-ready`.
+ 4. Click the `.context-trigger` button.
+-5. Assert that the dropdown is open and contains at least one `rc-dropdown-item`.
++5. Assert that the dropdown is open and contains the cluster option text.
+ 
+ **Assertions**:
+-- `.rc-dropdown-item` or `.context-dropdown` is visible
++- `cy.contains('.context-dropdown', 'cluster:local').should('be.visible')`
+ - The cluster option text (e.g. `cluster:local`) is present in the dropdown list
+ 
+ **Selectors**:
+@@ -234,13 +234,13 @@ is passed to the Context panel, preventing user interaction with the dropdown.
+ 1. Navigate to a page where context exists (cluster dashboard).
+ 2. Open the chat panel.
+ 3. Wait until `rancher-ai-ui-chat-panel-not-ready` is present (connection failure).
+-4. Assert that `.context-trigger` has the `disabled` attribute.
++4. Assert that the context panel wrapper has the `disabled-panel` class.
+ 
+ **Assertions**:
+-- `cy.get('.context-trigger').should('be.disabled')`
++- `cy.get('.chat-context').should('have.class', 'disabled-panel')`
+ 
+ **Selectors**:
+-- `.context-trigger`
++- `.chat-context` — context panel root (receives `disabled-panel` class when `disabled=true`)
+ - `[data-testid="rancher-ai-ui-chat-panel-not-ready"]`
+ 
+ **Screenshot**: `context-test-7-disabled-state`
+@@ -327,7 +327,7 @@ export class ContextPo extends ComponentPo {
+   }
+ 
+   toggleItem(labelText: string) {
+-    cy.contains('.context-dropdown .rc-dropdown-item', labelText).click();
++    cy.contains('.context-dropdown', labelText).click();
+     return this;
+   }
+ }
