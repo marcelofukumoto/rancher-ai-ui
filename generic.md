@@ -22,8 +22,9 @@
 
 ## Feature-Specific Notes (message-resource-actions)
 
-- Tests 1, 2, 5, 7 pass consistently — basic rendering and absence checks work.
-- Tests 3, 4, 6, 8 fail in attempt 1 — URL pattern, unknown resource rendering, "show more" toggle, and history persistence need fixes.
+- All 8 tests pass as of attempt 2 — fixes applied in attempt 2 resolved all failures from attempt 1.
+- Tests 1, 2, 5, 7 passed in attempt 1; tests 3, 4, 6, 8 required fixes (URL pattern, disabled button rendering, show-more toggle, history persistence).
+- Tests 3, 4, 6, 8 fixes were confirmed working in attempt 2.
 
 ## Anti-Patterns
 
