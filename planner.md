@@ -49,9 +49,11 @@
 - Use `cy.cleanChatHistory()` in `afterEach`.
 - `MessagePo.context(label).should('not.exist')` works for verifying deselected context because it searches page-wide; after tag deselection, no `rancher-ai-ui-context-tag-{label}` exists anywhere in the DOM.
 - Approved plan (context, Attempt 2): 8 test cases covering no-context home, cluster tag, dropdown open, remove/re-add tag, reset, disabled state, deselected context not sent.
+- Approved plan (message-resource-actions, Attempt 2): 8 test cases — single button, multiple buttons, click-navigation, disabled button, section label, show-more toggle, no actions for plain text, history persistence. Test 6 (show-more) required fix from tool-based to text-based mock.
 
 ## Page Objects
 
 - `ClusterDashboardPagePo` — used in `chat.spec.ts`; import from `@rancher/cypress/e2e/po/pages/explorer/cluster-dashboard.po`
-- `MessagePo` — in `cypress/e2e/po/message.po.ts`; `.context(label)` checks page-wide for context tag testid
+- `MessagePo` — in `cypress/e2e/po/message.po.ts`; `.context(label)` checks page-wide for context tag testid; `.resourceButton(prefix)` selects `[data-testid^="rancher-ai-ui-chat-message-action-button-{prefix}"]`
+- `HistoryPo` — in `cypress/e2e/po/history.po.ts`; has `open()`, `createChat()`, `chatItem(index).select()`
 - New PO classes go in `cypress/e2e/po/`
