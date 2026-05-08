@@ -168,7 +168,12 @@
 3. Welcome message (ID 1) completed
 
 **Steps**:
-1. Enqueue a mock response where `text` includes a `<mcp-response>` block with 9 resource names (array form): e.g., `tool: { name: 'listKubernetesResources', args: { kind: 'Pod', cluster: 'local', namespace: 'default' } }` — or craft the mock to return >7 results by using a namespace known to have many pods
+1. Enqueue a deterministic mock response with `text` containing a `<mcp-response>` block with exactly 9 pod names (array form):
+   ```typescript
+   cy.enqueueLLMResponse({
+     text: `Here are the pods.<mcp-response>${JSON.stringify([{ kind: 'Pod', type: 'v1/namespaces/default/pods', name: ['pod-1','pod-2','pod-3','pod-4','pod-5','pod-6','pod-7','pod-8','pod-9'], cluster: 'local', namespace: 'default' }])}</mcp-response>`,
+   });
+   ```
 2. Send a message: `'List all pods in default namespace'`
 3. Wait for AI response (ID 3) to complete
 
@@ -298,6 +303,19 @@ cy.enqueueLLMResponse({
       namespace: 'cattle-ai-agent-system',
     },
   },
+});
+```
+
+### `listKubernetesResources` — 9 pods (show-more trigger, deterministic)
+```typescript
+cy.enqueueLLMResponse({
+  text: `Here are the pods.<mcp-response>${JSON.stringify([{
+    kind: 'Pod',
+    type: 'v1/namespaces/default/pods',
+    name: ['pod-1','pod-2','pod-3','pod-4','pod-5','pod-6','pod-7','pod-8','pod-9'],
+    cluster: 'local',
+    namespace: 'default',
+  }])}</mcp-response>`,
 });
 ```
 
