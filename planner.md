@@ -4,6 +4,7 @@
 
 - **context** feature → `pkg/rancher-ai-ui/components/context/SelectContext.vue`, `ContextTag.vue`, `components/panels/Context.vue`
 - **message** feature → `pkg/rancher-ai-ui/components/message/index.vue`, `components/panels/Messages.vue`
+- **message-resource-actions** feature → `pkg/rancher-ai-ui/components/message/action/index.vue` (list + show-more), `message/action/Action.vue` (individual button/link)
 - **multi-agent** feature → `pkg/rancher-ai-ui/components/agent/SelectAgent.vue`
 - **chat panel** → `pkg/rancher-ai-ui/pages/Chat.vue`
 
@@ -21,6 +22,11 @@
 | `rancher-ai-ui-chat-panel-not-ready` | `Chat.vue` | Dynamic: shows when not ready |
 | `rancher-ai-ui-chat-message-box-{id}` | `Messages.vue` | Message IDs: 1=welcome, 2=first user msg, 3=first AI response |
 | `rancher-ai-ui-context-tag-{label}` in message | `message/index.vue` | User messages display context tags (role=User + contextContent) |
+| `rancher-ai-ui-chat-message-action-button-{resource.name}` | `message/action/Action.vue` | Dynamic testid; `resource.name` from `ActionResource.name` |
+| `.chat-actions-container` | `message/action/index.vue` | Root container div for the actions block |
+| `.chat-msg-action-title` | `message/action/index.vue` | Section heading above action buttons |
+| `.chat-msg-action-tags` | `message/action/index.vue` | Wraps the action button list |
+| `.chat-msg-actions-more` | `message/action/index.vue` | "Show more/less" toggle; present only when `actions.length > THRESHOLD (7)` |
 
 ## Selector Anti-Patterns
 
@@ -32,10 +38,13 @@
 - Test 7 (disabled state): Checking `.be.disabled` on a Vue component class is risky. Always use verifiable CSS class (`.disabled-panel` exists on `.chat-context` in Context.vue).
 - Context tags appear **inside user messages** (via `message/index.vue` when `role=User && contextContent?.length`) — `MessagePo.context(label)` searches the whole page via `.get()`, not scoped to message.
 - Message ID order: 1 = welcome (AI), 2 = first user msg, 3 = first AI response.
+- **Show-more mock**: Do NOT use `cy.enqueueLLMResponse({ tool })` to produce >7 action buttons — it queries the real cluster and the count is environment-dependent. Instead, use `cy.enqueueLLMResponse({ text: \`<mcp-response>${JSON.stringify([{kind,type,name:['a','b',...9],cluster,namespace}])}</mcp-response>\` })` to guarantee a deterministic count. The `name` field accepts an array; each entry becomes a separate button.
+- **`<mcp-response>` format**: `formatMessageRelatedResourcesActions()` in `utils/format.ts` parses a JSON array of `{kind, type, name (string|string[]), cluster, namespace}` objects between `<mcp-response>…</mcp-response>` tags.
 
 ## Coverage Guidelines
 
 - Context panel: test "No context" fallback (Home page), cluster tag auto-selection, dropdown add/remove, reset button, disabled state, and context not sent when deselected.
+- **message-resource-actions**: test single resource button (getKubernetesResource), multiple buttons (listKubernetesResources), click-navigation, disabled button for unknown resource, section label display, show-more toggle (use text mock with >7 names in array), no-buttons for plain text response, history persistence.
 - Always verify mock LLM response is enqueued before `chat.sendMessage()`.
 - Use `cy.cleanChatHistory()` in `afterEach`.
 - `MessagePo.context(label).should('not.exist')` works for verifying deselected context because it searches page-wide; after tag deselection, no `rancher-ai-ui-context-tag-{label}` exists anywhere in the DOM.
