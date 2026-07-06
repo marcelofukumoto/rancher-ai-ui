@@ -4,10 +4,15 @@ on:
     branches:
       - main
       - 'release-*'
+      # TEMPORARY: run CI on this branch without a PR while validating the
+      # Docker -> Helm/k3s migration. Remove before opening the PR.
+      - '250-e2e-tests---replace-docker-with-k3s'
   pull_request:
     branches:
       - main
       - 'release-*'
+  # TEMPORARY: allow manual runs while validating the migration. Remove before PR.
+  workflow_dispatch:
 
 env:
   RANCHER_VERSION: head
