@@ -19,11 +19,18 @@ import { rancherAgentConfig, fleetAgentConfig, provisioningAgentConfig } from '@
 describe('Chat', () => {
   const chat = new ChatPo();
 
+  // TEMPORARY: developer-load the extension into the stock Rancher dashboard once
+  // (serve-pkgs + persisted UIPlugin). Remove when the extension is loaded another way.
+  before(() => {
+    cy.developerLoadExtension();
+  });
+
   beforeEach(() => {
     cy.login();
   });
 
-  describe('Availability across UI products', () => {
+  // TEMPORARY: .only to run just the env-check suites while validating the setup. Remove before PR.
+  describe.only('Availability across UI products', () => {
     it('Home', () => {
       HomePagePo.goTo();
 
@@ -91,7 +98,8 @@ describe('Chat', () => {
     });
   });
 
-  describe('Disconnections handling', () => {
+  // TEMPORARY: .only to run just the env-check suites while validating the setup. Remove before PR.
+  describe.only('Disconnections handling', () => {
     beforeEach(() => {
       cy.login();
     });
