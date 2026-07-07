@@ -51,6 +51,34 @@ jobs:
       - name: Deploy Rancher AI charts
         run: .github/scripts/deploy-rancher-ai.sh ${{ env.KUBECONFIG_PATH }}
 
+      - name: Register extension (developer-load UIPlugin)
+        env:
+          KUBECONFIG: ${{ env.KUBECONFIG_PATH }}
+        run: |
+          CATALOG=$(curl -s http://127.0.0.1:${{ env.EXTENSION_SERVER_PORT }}/)
+          NAME=$(echo "$CATALOG" | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['name'])")
+          VERSION=$(echo "$CATALOG" | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['version'])")
+          MAIN=$(echo "$CATALOG" | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['main'])")
+          MODULE="${NAME}-${VERSION}"
+          ENDPOINT="http://127.0.0.1:${{ env.EXTENSION_SERVER_PORT }}/${MODULE}/${MAIN}"
+          echo "Registering ${MODULE} from ${ENDPOINT}"
+          kubectl apply -f - <<EOF
+          apiVersion: catalog.cattle.io/v1
+          kind: UIPlugin
+          metadata:
+            name: ${MODULE}
+            namespace: cattle-ui-plugin-system
+          spec:
+            plugin:
+              name: ${NAME}-developer-load
+              version: "${VERSION}"
+              endpoint: ${ENDPOINT}
+              noCache: true
+              metadata:
+                direct: "true"
+                catalog.cattle.io/ui-extensions-version: ">= 3"
+          EOF
+
       - name: Run Cypress tests
         id: cypress
         continue-on-error: true
@@ -60,6 +88,8 @@ jobs:
           TEST_BASE_URL: ${{ env.TEST_BASE_URL }}
           API: ${{ env.CATTLE_SERVER_URL }}
           CYPRESS_extension_server_url: http://127.0.0.1:${{ env.EXTENSION_SERVER_PORT }}
+          # The dashboard is a slow cold-load on the single-node k3s runner; give commands headroom.
+          TEST_TIMEOUT: '60000'
         run: |
           yarn e2e --browser chrome
 

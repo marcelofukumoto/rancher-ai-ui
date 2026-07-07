@@ -33,7 +33,6 @@ declare global {
       installUIToolsDefinition(): void;
       updateUIToolsDefinition(): void;
       uninstallUIToolsDefinition(): void;
-      developerLoadExtension(): void;
     }
   }
 }

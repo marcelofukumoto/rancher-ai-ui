@@ -19,12 +19,6 @@ import { rancherAgentConfig, fleetAgentConfig, provisioningAgentConfig } from '@
 describe('Chat', () => {
   const chat = new ChatPo();
 
-  // TEMPORARY: developer-load the extension into the stock Rancher dashboard once
-  // (serve-pkgs + persisted UIPlugin). Remove when the extension is loaded another way.
-  before(() => {
-    cy.developerLoadExtension();
-  });
-
   beforeEach(() => {
     cy.login();
   });
