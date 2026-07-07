@@ -18,19 +18,19 @@ beforeEach(() => {
     url:    '**/rancherversion'
   }, (req) => {
     req.continue((res) => {
-      let body = res.body;
-
-      if (typeof body === 'string') {
+      // Keep res.body the same type Cypress gave us (a string body must stay a string,
+      // otherwise Cypress crashes writing an object to the response stream).
+      if (res.body && typeof res.body === 'object') {
+        (res.body as any).RancherPrime = 'true';
+      } else if (typeof res.body === 'string') {
         try {
-          body = JSON.parse(body);
-        } catch (e) {
-          return;
-        }
-      }
+          const parsed = JSON.parse(res.body);
 
-      if (body && typeof body === 'object') {
-        body.RancherPrime = 'true';
-        res.body = body;
+          parsed.RancherPrime = 'true';
+          res.body = JSON.stringify(parsed);
+        } catch (e) {
+          // Not JSON - leave untouched.
+        }
       }
     });
   });
