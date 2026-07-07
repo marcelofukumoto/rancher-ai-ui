@@ -13,7 +13,10 @@ import './commands/ui-tools';
 // built in there (isDev). For the developer-load / same-origin setup we fake the Prime flag
 // on /rancherversion (exactly what the `yarn dev` PRIME proxy does) so the extension activates.
 beforeEach(() => {
-  cy.intercept({ method: 'GET', url: '**/rancherversion' }, (req) => {
+  cy.intercept({
+    method: 'GET',
+    url:    '**/rancherversion'
+  }, (req) => {
     req.continue((res) => {
       let body = res.body;
 
