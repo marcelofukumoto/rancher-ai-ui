@@ -127,6 +127,7 @@ jobs:
           path: |
             agent-deploy-poll.log
             agent-config-poll.log
+            agent-teardown.log
             cypress/logs
           if-no-files-found: warn
           retention-days: 7
