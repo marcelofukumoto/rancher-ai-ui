@@ -148,39 +148,9 @@ done
 # Namespace the developer-load UIPlugin CR lives in (created by the extension setup).
 kubectl create namespace cattle-ui-plugin-system --dry-run=client -o yaml | kubectl apply -f -
 
-# ---------------------------------
-# ----------------------- Bootstrap (login + settings)
-# ---------------------------------
-
-echo ""
-echo "Bootstrapping Rancher (login, server-url, eula, first-login) ..."
-TOKEN=""
-for i in $(seq 1 60); do
-  TOKEN=$(curl -sk -X POST "${CATTLE_SERVER_URL}/v3-public/localProviders/local?action=login" \
-    -H "Content-Type: application/json" \
-    -d "{\"username\":\"admin\",\"password\":\"${CATTLE_BOOTSTRAP_PASSWORD}\"}" \
-    | python3 -c "import sys,json; print(json.load(sys.stdin).get('token',''))" 2>/dev/null || echo "")
-  if [ -n "$TOKEN" ]; then
-    echo "Logged in after $i attempt(s)"
-    break
-  fi
-  echo "  Login not ready yet... ($i/60)"
-  sleep 5
-done
-if [ -z "$TOKEN" ]; then
-  echo "Failed to obtain an admin token"
-  exit 1
-fi
-
-curl -sk -X PUT "${CATTLE_SERVER_URL}/v3/settings/server-url" \
-  -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" \
-  -d "{\"name\":\"server-url\",\"value\":\"${CATTLE_SERVER_URL}\"}" >/dev/null
-curl -sk -X PUT "${CATTLE_SERVER_URL}/v3/settings/eula-agreed" \
-  -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" \
-  -d "{\"name\":\"eula-agreed\",\"value\":\"$(date +%Y-%m-%dT%H:%M:%S.000Z)\"}" >/dev/null
-curl -sk -X PUT "${CATTLE_SERVER_URL}/v3/settings/first-login" \
-  -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" \
-  -d "{\"name\":\"first-login\",\"value\":\"false\"}" >/dev/null
+# Rancher is intentionally left un-bootstrapped: the Cypress `setup/rancher-setup.spec.ts`
+# spec performs the UI first-login (bootstrap password, EULA, server-url) before the feature
+# specs run, matching the upstream flow.
 
 echo ""
 echo "Done. kubeconfig written to ${KUBECONFIG_PATH}"

@@ -79,31 +79,6 @@ jobs:
                 catalog.cattle.io/ui-extensions-version: ">= 3"
           EOF
 
-      # DIAGNOSTIC (temporary): poll the agent Deployment status every 0.5s during the whole
-      # Cypress run, epoch-timestamped, so we can see exactly when/if it goes non-ready and for
-      # how long. Cross-referenced against the browser store sampler in chat.spec.ts.
-      - name: Start agent deployment poller
-        env:
-          KUBECONFIG: ${{ env.KUBECONFIG_PATH }}
-        run: |
-          nohup bash -c '
-            for i in $(seq 1 2400); do
-              ts=$(date +%s%3N)
-              s=$(kubectl -n cattle-ai-agent-system get deploy rancher-ai-agent \
-                    -o "jsonpath={.status.readyReplicas}/{.status.availableReplicas}/{.status.updatedReplicas}/{.status.replicas}/gen={.metadata.generation}/obs={.status.observedGeneration}" \
-                    2>/dev/null || echo "NOTFOUND")
-              echo "$ts ready/avail/upd/replicas=${s:-EMPTY}" >> agent-deploy-poll.log
-              # DIAGNOSTIC (test 3): capture each AIAgentConfig CR name=enabled so we can see
-              # whether disabling all agents actually sticks (or the kopf operator re-enables them).
-              c=$(kubectl get aiagentconfig -A \
-                    -o "jsonpath={range .items[*]}{.metadata.name}={.spec.enabled} {end}" \
-                    2>/dev/null || echo "ERR")
-              echo "$ts ${c:-NONE}" >> agent-config-poll.log
-              sleep 0.5
-            done
-          ' > /dev/null 2>&1 &
-          echo "Poller started (pid $!)"
-
       - name: Run Cypress tests
         id: cypress
         continue-on-error: true
@@ -117,20 +92,6 @@ jobs:
           TEST_TIMEOUT: '60000'
         run: |
           yarn e2e --browser chrome
-
-      # DIAGNOSTIC (temporary): upload both probe outputs so we can cross-reference the timelines.
-      - name: Upload disconnection diagnostic probes
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: disconnect-diagnostics
-          path: |
-            agent-deploy-poll.log
-            agent-config-poll.log
-            agent-teardown.log
-            cypress/logs
-          if-no-files-found: warn
-          retention-days: 7
 
       - name: Extension catalog server log on failure
         if: steps.cypress.outcome != 'success'
