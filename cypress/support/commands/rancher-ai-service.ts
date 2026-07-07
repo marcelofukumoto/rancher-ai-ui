@@ -18,10 +18,12 @@ function resolveKubeconfig(): Cypress.Chainable<string> {
     return cy.wrap(directKubeconfig, { log: false });
   }
 
+  const apiRoot = (Cypress.config('baseUrl') || '').replace(/\/dashboard\/?$/, '');
+
   return cy.getCookie('CSRF').then((token) => {
     return cy.request({
       method:  'POST',
-      url:     '/v3/clusters/local?action=generateKubeconfig',
+      url:     `${ apiRoot }/v3/clusters/local?action=generateKubeconfig`,
       headers: {
         'x-api-csrf': token?.value,
         Accept:       'application/json'
