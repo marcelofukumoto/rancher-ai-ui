@@ -23,7 +23,8 @@ describe('Chat', () => {
     cy.login();
   });
 
-  describe('Availability across UI products', () => {
+  // TEMPORARY: .only to run just the env-check suites while validating Helm/k3s. Remove before PR.
+  describe.only('Availability across UI products', () => {
     it('Home', () => {
       HomePagePo.goTo();
 
@@ -91,7 +92,8 @@ describe('Chat', () => {
     });
   });
 
-  describe('Disconnections handling', () => {
+  // TEMPORARY: .only to run just the env-check suites while validating Helm/k3s. Remove before PR.
+  describe.only('Disconnections handling', () => {
     beforeEach(() => {
       cy.login();
     });
