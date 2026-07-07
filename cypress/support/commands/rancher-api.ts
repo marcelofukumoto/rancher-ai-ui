@@ -1,17 +1,4 @@
-/**
- * Builds an absolute URL against the Rancher API root.
- *
- * The Steve/Norman APIs (/v1, /v3) live at the server root, but the Cypress baseUrl points at
- * the dashboard (e.g. `https://<host>/dashboard`). A relative request path would resolve to
- * `/dashboard/v1/...` and silently return the dashboard SPA HTML (200) instead of the resource.
- * Stripping a trailing `/dashboard` from baseUrl gives the API root; in yarn-dev (no `/dashboard`
- * suffix) it is a no-op, so this is safe in both setups.
- */
-function rancherApiUrl(path: string): string {
-  const base = (Cypress.config('baseUrl') || '').replace(/\/dashboard\/?$/, '');
-
-  return `${ base }${ path }`;
-}
+import { rancherApiUrl } from '../utils/rancher-url';
 
 /**
  * Gets a Rancher resource via the Rancher API

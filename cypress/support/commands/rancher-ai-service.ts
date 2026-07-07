@@ -1,4 +1,5 @@
 import { InstallRancherAIServiceArgs } from '@/cypress/globals';
+import { rancherApiUrl } from '../utils/rancher-url';
 
 /**
  * Resolves a kubeconfig for the local cluster and yields its path.
@@ -18,12 +19,10 @@ function resolveKubeconfig(): Cypress.Chainable<string> {
     return cy.wrap(directKubeconfig, { log: false });
   }
 
-  const apiRoot = (Cypress.config('baseUrl') || '').replace(/\/dashboard\/?$/, '');
-
   return cy.getCookie('CSRF').then((token) => {
     return cy.request({
       method:  'POST',
-      url:     `${ apiRoot }/v3/clusters/local?action=generateKubeconfig`,
+      url:     rancherApiUrl('/v3/clusters/local?action=generateKubeconfig'),
       headers: {
         'x-api-csrf': token?.value,
         Accept:       'application/json'
