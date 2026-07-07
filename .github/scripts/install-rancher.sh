@@ -145,6 +145,9 @@ while [ $okay -lt 30 ]; do
   sleep 10
 done
 
+# Namespace the developer-load UIPlugin CR lives in (created by the extension setup).
+kubectl create namespace cattle-ui-plugin-system --dry-run=client -o yaml | kubectl apply -f -
+
 # ---------------------------------
 # ----------------------- Bootstrap (login + settings)
 # ---------------------------------

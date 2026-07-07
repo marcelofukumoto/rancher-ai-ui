@@ -73,7 +73,7 @@ jobs:
           KUBECONFIG: ${{ env.KUBECONFIG_PATH }}
         run: |
           kubectl get pods -A || true
-          kubectl get catalog.cattle.io.uiplugins -A -o yaml || true
+          kubectl get uiplugins.catalog.cattle.io -A -o yaml || true
           kubectl -n cattle-ai-agent-system logs -l app=rancher-ai-agent --all-containers --tail=-1 --prefix || true
           kubectl -n cattle-system logs -l app=rancher --all-containers --tail=-1 || true
 
