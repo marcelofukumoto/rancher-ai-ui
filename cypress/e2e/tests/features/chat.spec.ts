@@ -98,6 +98,22 @@ describe('Chat', () => {
       cy.login();
     });
 
+    // DIAGNOSTIC (temporary): if a test installed the store-state sampler on the app window,
+    // dump the collected samples to disk so we can cross-reference against the cluster-side
+    // Deployment poller and see whether the UI store ever observed the agent going away.
+    afterEach(() => {
+      cy.window({ log: false }).then((win) => {
+        const log = (win as any).__aiLog;
+
+        if ((win as any).__aiTimer) {
+          win.clearInterval((win as any).__aiTimer);
+        }
+        if (log && log.length) {
+          cy.writeFile(`cypress/logs/store-state-${ Date.now() }.json`, JSON.stringify(log, null, 2), { log: false });
+        }
+      });
+    });
+
     it('it should support reconnections on settings changes', () => {
       // Go to Settings page
       const globalSettings = new GlobalSettings('_');
@@ -221,6 +237,25 @@ describe('Chat', () => {
       const welcomeMessage = chat.getMessage(1);
 
       welcomeMessage.isCompleted();
+
+      // DIAGNOSTIC (temporary): sample the management store's copy of the agent Deployment every
+      // 300ms (epoch-timestamped) while the service is torn down + reinstalled. Cross-referenced
+      // in afterEach against the cluster-side poller to tell whether the down-window reaches the UI.
+      cy.window({ log: false }).then((win) => {
+        (win as any).__aiLog = [];
+        (win as any).__aiTimer = win.setInterval(() => {
+          try {
+            const list = (win as any).$nuxt.$store.getters['management/all']('apps.deployment') || [];
+            const d = list.find((x: any) => x.metadata?.name === 'rancher-ai-agent' && x.metadata?.namespace === 'cattle-ai-agent-system');
+
+            (win as any).__aiLog.push({
+              t: Date.now(), found: !!d, state: d?.state, avail: d?.status?.availableReplicas, ready: d?.status?.readyReplicas
+            });
+          } catch (e) {
+            (win as any).__aiLog.push({ t: Date.now(), err: String(e) });
+          }
+        }, 300);
+      });
 
       cy.installRancherAIService({ waitForAIServiceReady: false });
 
