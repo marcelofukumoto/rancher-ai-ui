@@ -331,6 +331,16 @@ describe('Chat', () => {
         spec: { enabled: false }
       });
 
+      // DIAGNOSTIC (temporary): re-GET each config right after disabling and record the
+      // persisted spec.enabled, so we can see whether the Steve PUT actually stuck.
+      ['rancher', 'fleet', 'provisioning'].forEach((n) => {
+        cy.getRancherResource('v1', 'ai.cattle.io.aiagentconfig', `cattle-ai-agent-system/${ n }`).then((r: any) => {
+          cy.writeFile(`cypress/logs/test3-config-${ n }.json`, JSON.stringify({
+            name: n, enabled: r.body?.spec?.enabled, resourceVersion: r.body?.metadata?.resourceVersion, spec: r.body?.spec
+          }, null, 2), { log: false });
+        });
+      });
+
       const globalSettings = new GlobalSettings('_');
       const sideNav = new ProductNavPo();
 

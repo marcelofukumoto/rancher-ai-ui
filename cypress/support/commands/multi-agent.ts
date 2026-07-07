@@ -25,7 +25,12 @@ Cypress.Commands.add('updateAgentConfig', (config: object) => {
       }
     };
 
-    cy.setRancherResource('v1', 'ai.cattle.io.aiagentconfig', `${ namespace }/${ name }`, updatedConfig);
+    cy.setRancherResource('v1', 'ai.cattle.io.aiagentconfig', `${ namespace }/${ name }`, updatedConfig).then((putResp: any) => {
+      // DIAGNOSTIC (temporary): record what the PUT sent vs what Steve echoed back.
+      cy.writeFile(`cypress/logs/test3-put-${ name }.json`, JSON.stringify({
+        name, sentEnabled: updatedConfig.spec?.enabled, respStatus: putResp?.status, respEnabled: putResp?.body?.spec?.enabled
+      }, null, 2), { log: false });
+    });
   });
 });
 
