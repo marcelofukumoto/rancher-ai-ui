@@ -51,6 +51,10 @@ export class HistoryChatItemPo extends ComponentPo {
   }
 
   menu() {
+    // The per-item menu button is only rendered while the item is hovered. realHover establishes
+    // and holds the hover (realMouseUp alone can drop it under load), so the button reliably renders.
+    this.self().scrollIntoView();
+    this.self().realHover();
     this.self().realMouseUp();
 
     return new HistoryChatItemMenuPo();
