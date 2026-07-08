@@ -26,8 +26,9 @@ export class SlidingBadgePo extends HookPo {
     // while the resource's state is still settling (e.g. an extra bg-info badge during load).
     this.target.self().first().trigger('mouseenter', { force: true });
 
-    // Trigger mouse enter on the sliding badge to reveal its second stage
-    const slidingBadge = this.target.self().get('[data-testid="rancher-ai-ui-hook-overlay"]');
+    // Trigger mouse enter on the sliding badge to reveal its second stage. Scope to the first
+    // overlay too - a transient second matching badge produces a second overlay.
+    const slidingBadge = this.target.self().get('[data-testid="rancher-ai-ui-hook-overlay"]').first();
 
     slidingBadge.trigger('mouseenter', { force: true });
 
