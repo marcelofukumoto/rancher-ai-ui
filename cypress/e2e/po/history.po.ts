@@ -51,11 +51,11 @@ export class HistoryChatItemPo extends ComponentPo {
   }
 
   menu() {
-    // The per-item menu button is only rendered while the item is hovered. realHover establishes
-    // and holds the hover (realMouseUp alone can drop it under load), so the button reliably renders.
+    // The per-item menu button is only rendered while the item is hovered (the item's @mouseover
+    // handler sets the hover flag). Dispatch mouseover synthetically instead of simulating a real
+    // hover (realHover/realMouseUp), which is flaky in CI, so the button reliably renders.
     this.self().scrollIntoView();
-    this.self().realHover();
-    this.self().realMouseUp();
+    this.self().trigger('mouseover');
 
     return new HistoryChatItemMenuPo();
   }
@@ -65,16 +65,15 @@ export class HistoryChatItemPo extends ComponentPo {
   }
 
   showTooltip() {
-    // The name tooltip (v-clean-tooltip) is bound to the name span, not the item container, and it
-    // only stays open while the pointer is held over that span. Hover that span itself: hovering the
-    // container centre can land on the menu button/padding and miss the span, so its mouseenter
-    // never fires. Scope with find (not get, which queries the whole document and would match every
-    // item's name span). realHover (vs a one-shot realMouseUp) holds the cursor there until the next
-    // real event, reliably opening the popper.
+    // The name tooltip (v-clean-tooltip / floating-vue) is bound to the name span and opens on its
+    // mouseenter event. Dispatch mouseenter synthetically - the proven @rancher/cypress TooltipPo
+    // pattern - rather than simulating a real hover (realHover/realMouseUp), which is ~50% flaky in
+    // CI because it depends on cursor position, scroll and hover timing. Scope with find (not get,
+    // which queries the whole document and would match every item's name span).
     const nameSelector = '[data-testid="rancher-ai-ui-chat-history-item-name"]';
 
     this.self().find(nameSelector).scrollIntoView();
-    this.self().find(nameSelector).realHover();
+    this.self().find(nameSelector).trigger('mouseenter');
   }
 }
 
