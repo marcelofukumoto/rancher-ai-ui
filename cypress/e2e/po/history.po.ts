@@ -65,12 +65,13 @@ export class HistoryChatItemPo extends ComponentPo {
   }
 
   showTooltip() {
-    // The name tooltip is a v-popper hover tooltip: it only stays open while the pointer is held
-    // over the item. realMouseUp fires a single mouse-up and does not sustain the hover, so under
-    // load the popper never opens (or opens and immediately closes). realHover moves the cursor
-    // over the item and holds it there until the next real event, reliably opening the tooltip.
-    this.self().scrollIntoView();
-    this.self().realHover();
+    // The name tooltip (v-clean-tooltip) is bound to the name span, not the item container, and it
+    // only stays open while the pointer is held over that span. Hover the span itself: hovering the
+    // container centre can land on the menu button/padding and miss the span, so its mouseenter
+    // never fires. realHover (vs a one-shot realMouseUp) holds the cursor there until the next real
+    // event, reliably opening the popper.
+    this.name().scrollIntoView();
+    this.name().realHover();
   }
 }
 
