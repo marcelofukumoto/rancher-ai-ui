@@ -66,12 +66,15 @@ export class HistoryChatItemPo extends ComponentPo {
 
   showTooltip() {
     // The name tooltip (v-clean-tooltip) is bound to the name span, not the item container, and it
-    // only stays open while the pointer is held over that span. Hover the span itself: hovering the
+    // only stays open while the pointer is held over that span. Hover that span itself: hovering the
     // container centre can land on the menu button/padding and miss the span, so its mouseenter
-    // never fires. realHover (vs a one-shot realMouseUp) holds the cursor there until the next real
-    // event, reliably opening the popper.
-    this.name().scrollIntoView();
-    this.name().realHover();
+    // never fires. Scope with find (not get, which queries the whole document and would match every
+    // item's name span). realHover (vs a one-shot realMouseUp) holds the cursor there until the next
+    // real event, reliably opening the popper.
+    const nameSelector = '[data-testid="rancher-ai-ui-chat-history-item-name"]';
+
+    this.self().find(nameSelector).scrollIntoView();
+    this.self().find(nameSelector).realHover();
   }
 }
 
