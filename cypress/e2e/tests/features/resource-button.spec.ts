@@ -164,7 +164,11 @@ describe('Resource button', () => {
         expect(requests).to.have.lengthOf(1);
       });
 
-      chat.messagesPanel().scrollTop();
+      // Scroll the (currently out-of-view) first button into view to trigger its lazy schema load.
+      // scrollIntoView on the button itself is deterministic: the panel's smooth scrollTo('top')
+      // can race the auto-scroll/layout after reopen and fail to produce a clean IntersectionObserver
+      // transition, so the fetch never fires. This still exercises "becomes visible -> loads".
+      chat.getMessage(3).resourceButton({ name: 'e-v8fhl' }).scrollIntoView();
 
       // First button becomes visible, it should load the resource via cluster API
       cy.wait('@fetchSchema', { timeout: SCHEMA_FETCH_TIMEOUT }).its('response.statusCode').should('eq', 404);
