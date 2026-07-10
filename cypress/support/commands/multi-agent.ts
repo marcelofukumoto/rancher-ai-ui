@@ -45,17 +45,18 @@ function pollAgentConfigActive(namespace: string, name: string, attempts = 20): 
   return getAgentConfig(namespace, name).then((resp) => {
     const state = resp.body?.metadata?.state?.name;
 
+    // Every branch yields via a cy chain (cy.wrap / recursion): returning the bare resp object from
+    // a .then chained onto the custom getAgentConfig helper trips Cypress's "mixing async and sync
+    // code" guard.
     if (state === 'active') {
-      return resp;
+      return cy.wrap(resp, { log: false });
     }
 
     if (attempts <= 1) {
-      // Return a chain (cy.log(...).then) rather than queuing cy.log and returning a plain value,
-      // which Cypress rejects as "mixing async and sync code". Also surface the observed state and
-      // status so the reconcile signal can be confirmed / corrected from the run log.
-      return cy
-        .log(`pollAgentConfigActive: ${ namespace }/${ name } not active after retries (state='${ state }', status=${ JSON.stringify(resp.body?.status) }); proceeding`)
-        .then(() => resp);
+      // Surface the observed state/status so the reconcile signal can be confirmed / corrected.
+      cy.log(`pollAgentConfigActive: ${ namespace }/${ name } not active after retries (state='${ state }', status=${ JSON.stringify(resp.body?.status) }); proceeding`);
+
+      return cy.wrap(resp, { log: false });
     }
 
     cy.wait(1500);
@@ -114,5 +115,5 @@ Cypress.Commands.add('deleteAgentConfig', (config: object) => {
 Cypress.Commands.add('waitForAgentConfigActive', (config: object) => {
   const { name, namespace } = (config as any).metadata;
 
-  pollAgentConfigActive(namespace, name);
+  return pollAgentConfigActive(namespace, name);
 });
