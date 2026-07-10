@@ -7,14 +7,6 @@ import './commands/chat-history';
 import './commands/multi-agent';
 import './commands/ui-tools';
 
-// Guard between tests: wait for the AI agent to be Available before each test. On the shared
-// Helm-on-k3s CI runner the single-worker agent can be restarted by its liveness probe under
-// load, dropping chat WebSockets; without this, the next test's beforeEach races the restart and
-// cascade-fails. No-op outside the Helm-on-k3s topology (see waitForAiAgentReady).
-beforeEach(() => {
-  cy.waitForAiAgentReady();
-});
-
 // The AI Assistant extension is prime-only: when developer-loaded (i.e. not a built-in
 // extension) into a community Rancher it gates itself off with a "requires Rancher Prime"
 // notice and never registers the chat. `yarn dev` sidesteps this because the extension is

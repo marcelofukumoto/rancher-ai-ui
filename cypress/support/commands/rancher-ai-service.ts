@@ -66,38 +66,6 @@ Cypress.Commands.add('installRancherAIService', ( args: InstallRancherAIServiceA
 });
 
 /**
- * Guards against the agent-restart cascade on the Helm-on-k3s CI runner.
- *
- * The single-worker agent can be CPU-starved on the shared runner and get restarted by its k8s
- * liveness probe, which drops active chat WebSockets. Run as a between-test guard, this lets a
- * test that follows a restart wait for the agent to become Available again - instead of its
- * beforeEach (which opens the chat and waits for the welcome message) racing the restart and
- * cascade-failing. It also gives Cypress retries a healthy agent to retry against. Bounded and
- * non-fatal: each test's own assertions still govern correctness.
- *
- * Only active when a direct kubeconfig is provided (the Helm-on-k3s topology). Elsewhere it is a
- * no-op, so local / yarn-dev runs against a shared cluster don't shell out on every test.
- */
-Cypress.Commands.add('waitForAiAgentReady', () => {
-  const kubeconfig = Cypress.env('kubeconfig');
-
-  if (!kubeconfig) {
-    return;
-  }
-
-  const cmd = `KUBECONFIG='${ kubeconfig }' kubectl -n cattle-ai-agent-system rollout status deployment/rancher-ai-agent --timeout=120s`;
-
-  cy.exec(cmd, {
-    failOnNonZeroExit: false,
-    timeout:           130000
-  }).then((result) => {
-    if (result.code !== 0) {
-      cy.log(`waitForAiAgentReady: agent not Available within timeout - ${ result.stderr || result.stdout || 'unknown' }`);
-    }
-  });
-});
-
-/**
  * Uninstalls Rancher AI from the local cluster.
  */
 Cypress.Commands.add('uninstallRancherAIService', () => {
