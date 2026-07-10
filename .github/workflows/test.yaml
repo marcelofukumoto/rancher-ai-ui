@@ -93,6 +93,44 @@ jobs:
         run: |
           yarn e2e --browser chrome
 
+      # The e2e flakes look like the agent being restarted mid-test (dropping chat WebSockets), but
+      # so far that has only been inferred from test symptoms. Capture the agent's restart count,
+      # why it last terminated (liveness-probe kill vs process crash vs OOMKilled) and its
+      # pre-restart logs. Runs on every result - a green run reporting 0 restarts is the signal that
+      # the probe tuning worked, while a non-zero exit code + traceback would instead point at the
+      # agent's WebSocket send-after-close bug, which probe tuning cannot fix.
+      - name: AI agent restart diagnostics
+        if: always()
+        env:
+          KUBECONFIG: ${{ env.KUBECONFIG_PATH }}
+        run: |
+          NS=cattle-ai-agent-system
+          SEL="-l app=rancher-ai-agent"
+
+          echo "=== agent pods ==="
+          kubectl -n "$NS" get pods $SEL -o wide || true
+
+          RESTARTS=$(kubectl -n "$NS" get pods $SEL \
+            -o jsonpath='{.items[*].status.containerStatuses[*].restartCount}' 2>/dev/null || true)
+          RESTARTS=${RESTARTS:-unknown}
+          echo "AGENT_RESTART_COUNT=$RESTARTS"
+          echo "AGENT_RESTART_COUNT=$RESTARTS" >> "$GITHUB_STEP_SUMMARY" || true
+
+          echo "=== last terminated state (probe kill vs crash vs OOMKilled) ==="
+          kubectl -n "$NS" get pods $SEL -o jsonpath='{range .items[*].status.containerStatuses[*]}{.name}{" reason="}{.lastState.terminated.reason}{" exitCode="}{.lastState.terminated.exitCode}{" signal="}{.lastState.terminated.signal}{"\n"}{end}' || true
+          echo
+
+          echo "=== events (look for Unhealthy / Liveness probe failed / Killing / OOMKilling) ==="
+          kubectl -n "$NS" get events --sort-by=.lastTimestamp || true
+
+          echo "=== resource pressure ==="
+          kubectl top nodes || true
+          kubectl top pods -n "$NS" || true
+
+          echo "=== previous container logs (exist only if the agent restarted) ==="
+          kubectl -n "$NS" logs $SEL --previous --all-containers --tail=-1 --prefix \
+            || echo "(no previous container - agent never restarted)"
+
       - name: Extension catalog server log on failure
         if: steps.cypress.outcome != 'success'
         run: cat serve-pkgs.log || true
