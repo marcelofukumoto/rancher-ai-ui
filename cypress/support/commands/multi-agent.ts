@@ -45,12 +45,17 @@ function pollAgentConfigActive(namespace: string, name: string, attempts = 20): 
   return getAgentConfig(namespace, name).then((resp) => {
     const state = resp.body?.metadata?.state?.name;
 
-    if (state === 'active' || attempts <= 1) {
-      if (state !== 'active') {
-        cy.log(`pollAgentConfigActive: ${ namespace }/${ name } state='${ state }' after retries (proceeding)`);
-      }
-
+    if (state === 'active') {
       return resp;
+    }
+
+    if (attempts <= 1) {
+      // Return a chain (cy.log(...).then) rather than queuing cy.log and returning a plain value,
+      // which Cypress rejects as "mixing async and sync code". Also surface the observed state and
+      // status so the reconcile signal can be confirmed / corrected from the run log.
+      return cy
+        .log(`pollAgentConfigActive: ${ namespace }/${ name } not active after retries (state='${ state }', status=${ JSON.stringify(resp.body?.status) }); proceeding`)
+        .then(() => resp);
     }
 
     cy.wait(1500);
