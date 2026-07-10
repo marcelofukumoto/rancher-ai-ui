@@ -26,6 +26,7 @@ declare global {
       cleanChatHistory(): void;
       installRancherAIService(args?: InstallRancherAIServiceArgs): void;
       uninstallRancherAIService(): void;
+      waitForAiAgentReady(): void;
       agentDBPersistencyEnabled(value: boolean): void;
       createAgentConfig(config: object): void;
       updateAgentConfig(config: object): void;
