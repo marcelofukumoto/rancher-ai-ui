@@ -2,6 +2,13 @@ import ComponentPo from '@rancher/cypress/e2e/po/components/component.po';
 import ChatPo from '@/cypress/e2e/po/chat.po';
 import TooltipPo from '@/cypress/e2e/po/components/tooltip.po';
 
+const CHAT_ITEM_MENU_BUTTON = '[data-testid="rancher-ai-ui-chat-history-chat-item-menu-button"]';
+const CHAT_ITEM_NAME = '[data-testid="rancher-ai-ui-chat-history-item-name"]';
+
+// Matches chat items only: the shared `chat-item-` prefix also covers the menu button and its
+// dropdown options, so those are excluded explicitly.
+const CHAT_ITEM_SELECTOR = '[data-testid^="rancher-ai-ui-chat-history-chat-item-"]:not([data-testid*="menu-button"])';
+
 export class HistoryChatItemMenuActionPo extends ComponentPo {
   constructor(actionId: string) {
     super(`[data-testid="rancher-ai-ui-chat-history-chat-item-menu-button-option-${ actionId }"]`);
@@ -13,8 +20,10 @@ export class HistoryChatItemMenuActionPo extends ComponentPo {
 }
 
 export class HistoryChatItemMenuPo extends ComponentPo {
-  constructor() {
-    super('[data-testid="rancher-ai-ui-chat-history-chat-item-menu-button"]');
+  // Scoped to its own item: the menu button is rendered per hovered item, so a document-wide
+  // lookup can match more than one once several items have been hovered.
+  constructor(item: HistoryChatItemPo) {
+    super(() => item.self().find(CHAT_ITEM_MENU_BUTTON));
   }
 
   open() {
@@ -39,7 +48,8 @@ export class HistoryChatItemPo extends ComponentPo {
   }
 
   name() {
-    return this.self().get('[data-testid="rancher-ai-ui-chat-history-item-name"]');
+    // find, not get: get queries the whole document and would match every item's name span.
+    return this.self().find(CHAT_ITEM_NAME);
   }
 
   nameInput() {
@@ -57,7 +67,7 @@ export class HistoryChatItemPo extends ComponentPo {
     this.self().scrollIntoView();
     this.self().trigger('mouseover');
 
-    return new HistoryChatItemMenuPo();
+    return new HistoryChatItemMenuPo(this);
   }
 
   select() {
@@ -70,10 +80,8 @@ export class HistoryChatItemPo extends ComponentPo {
     // pattern - rather than simulating a real hover (realHover/realMouseUp), which is ~50% flaky in
     // CI because it depends on cursor position, scroll and hover timing. Scope with find (not get,
     // which queries the whole document and would match every item's name span).
-    const nameSelector = '[data-testid="rancher-ai-ui-chat-history-item-name"]';
-
-    this.self().find(nameSelector).scrollIntoView();
-    this.self().find(nameSelector).trigger('mouseenter');
+    this.self().find(CHAT_ITEM_NAME).scrollIntoView();
+    this.self().find(CHAT_ITEM_NAME).trigger('mouseenter');
   }
 }
 
@@ -98,7 +106,11 @@ export class HistoryPo extends ComponentPo {
   }
 
   chatItems() {
-    return this.self().get('[data-testid^="rancher-ai-ui-chat-history-chat-item-"]');
+    // The `chat-item-` prefix also matches the per-item menu button and its dropdown options
+    // (`...chat-item-menu-button`, `...chat-item-menu-button-option-*`), which stay mounted while
+    // an item is hovered - so a bare prefix match counts menu elements as chats. Exclude them, and
+    // scope with find (get would query the whole document, picking up the teleported dropdown).
+    return this.self().find(CHAT_ITEM_SELECTOR);
   }
 
   chatItem(index: number) {
