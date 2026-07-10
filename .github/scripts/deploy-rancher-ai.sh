@@ -61,10 +61,13 @@ kubectl -n cattle-ai-agent-system wait --for=condition=available --timeout=1m de
 # Probe tuning for the shared CI runner. The agent is a single-worker ASGI process serving the chat
 # WebSocket, message processing AND the probe endpoints (/v1/api/health, /v1/api/readiness) from the
 # same event loop. Under load that worker can't answer the probes in time; with default thresholds
-# k8s restarts the pod, dropping active chat WebSockets and cascading test failures. Make liveness/
-# readiness lenient so transient starvation doesn't restart the pod or pull it from the Service (the
-# agent recovers on its own once CPU frees up), and keep the startup probe patient so a slow runner
-# boot doesn't restart-loop.
+# k8s restarts the pod, dropping active chat WebSockets and cascading test failures.
+#
+# Only raise tolerance (failureThreshold/timeoutSeconds), never the check interval: periodSeconds
+# controls how fast readiness is *detected*, and the disconnection tests reinstall the agent then
+# wait just 20s for it to be Ready again. Keep the chart's default periodSeconds so recovery is
+# still detected promptly, while the high thresholds stop transient starvation from restarting the
+# pod or pulling it from the Service (the agent recovers on its own once CPU frees up).
 helm upgrade --install ai-agent ./rancher-ai-agent/chart/agent \
   --namespace cattle-ai-agent-system \
   --create-namespace \
@@ -77,12 +80,9 @@ helm upgrade --install ai-agent ./rancher-ai-agent/chart/agent \
   --set llmMock.url=http://llm-mock \
   --set insecureSkipTls=true \
   --set log.level=debug \
-  --set probes.startup.periodSeconds=5 \
   --set probes.startup.failureThreshold=60 \
-  --set probes.liveness.periodSeconds=20 \
   --set probes.liveness.timeoutSeconds=10 \
   --set probes.liveness.failureThreshold=30 \
-  --set probes.readiness.periodSeconds=15 \
   --set probes.readiness.timeoutSeconds=10 \
   --set probes.readiness.failureThreshold=30 \
   $HELM_WAIT_FLAGS
