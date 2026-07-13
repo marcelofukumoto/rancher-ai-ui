@@ -131,6 +131,18 @@ jobs:
           kubectl -n "$NS" logs $SEL --previous --all-containers --tail=-1 --prefix \
             || echo "(no previous container - agent never restarted)"
 
+          echo "=== mcp-server service + endpoints (DNS stability across the run) ==="
+          kubectl -n "$NS" get service rancher-mcp-server -o wide || echo "(rancher-mcp-server service MISSING)"
+          kubectl -n "$NS" get endpoints rancher-mcp-server -o wide || true
+          kubectl -n "$NS" get pods -l app=rancher-mcp-server -o wide || true
+
+          echo "=== agent config states (should be active; drives the multi-agent specs) ==="
+          kubectl -n "$NS" get aiagentconfigs.ai.cattle.io -o custom-columns='NAME:.metadata.name,PHASE:.status.phase' || true
+
+          echo "=== agent controller MCP-load errors (root cause of multi-agent flake) ==="
+          kubectl -n "$NS" logs $SEL --all-containers --tail=-1 2>/dev/null | grep -iE "Failed to load MCP|Name or service not known" | tail -20 \
+            || echo "(no MCP-load errors)"
+
       - name: Extension catalog server log on failure
         if: steps.cypress.outcome != 'success'
         run: cat serve-pkgs.log || true

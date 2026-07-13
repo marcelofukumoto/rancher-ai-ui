@@ -35,11 +35,14 @@ fi
 
 export KUBECONFIG="$KUBECONFIG_PATH"
 
-helm uninstall ai-agent -n cattle-ai-agent-system || true
-helm uninstall llm-mock -n cattle-ai-agent-system || true
-
-# Force a real teardown of the agent workload before reinstalling, so the disconnection e2e
-# tests get an observable "unavailable" window regardless of helm release bookkeeping.
+# Give the disconnection e2e tests an observable "unavailable" window by tearing down only the agent
+# workloads (deployments), NOT the whole helm release. `helm uninstall` would also delete the
+# rancher-mcp-server Service (and llm-mock Service) that ship in these charts; deleting and
+# recreating them on every in-test reinstall churns ClusterIPs and leaves the service DNS names
+# (e.g. rancher-mcp-server.<ns>.svc) intermittently unresolvable, so the agent controller fails to
+# load MCP tools ("Name or service not known") and custom agents never reconcile to active - which
+# flakes the multi-agent specs. Deleting just the deployments keeps the Services (and their DNS)
+# stable; the `helm upgrade --install` calls below recreate the deleted deployments.
 kubectl -n cattle-ai-agent-system delete deployment rancher-ai-agent llm-mock --ignore-not-found || true
 
 if [ "$FETCH_REPOS" = "true" ]; then
