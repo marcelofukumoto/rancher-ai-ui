@@ -4,10 +4,14 @@ on:
     branches:
       - main
       - 'release-*'
+      # TEMPORARY: baseline-health branch, run CI without a PR. Remove before any real use.
+      - 'main-test'
   pull_request:
     branches:
       - main
       - 'release-*'
+  # TEMPORARY: allow manual runs to measure main's baseline flakiness.
+  workflow_dispatch:
 
 env:
   RANCHER_VERSION: head
