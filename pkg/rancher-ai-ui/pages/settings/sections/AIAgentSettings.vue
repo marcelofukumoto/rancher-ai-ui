@@ -3,6 +3,7 @@ import { cloneDeep, debounce } from 'lodash';
 import {
   ref, computed,
   onMounted,
+  watch,
 } from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from '@shell/composables/useI18n';
@@ -43,7 +44,11 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:value', 'update:validation-error']);
+const emit = defineEmits([
+  'update:value',
+  'update:models',
+  'update:validation-error'
+]);
 
 const { fetchLLMModels } = useAIAgentApiComposable();
 
@@ -384,6 +389,16 @@ const updateChatbotValue = async(val: ChatBotEnum) => {
   if (models.value[val] === undefined && val !== ChatBotEnum.GenericOpenAI) {
     fetchModels(val);
   }
+
+  emitModelOptions(val);
+};
+
+const updateModelValue = (val: string) => {
+  const activeChatbot = formData.value[Settings.ACTIVE_CHATBOT] as ChatBotEnum;
+
+  updateValue(getModelKey(activeChatbot), val);
+
+  emitModelOptions(activeChatbot, val);
 };
 
 /**
@@ -442,6 +457,34 @@ const updateValue = (key: Settings, val: string) => {
 
   validateSettings(newValue);
 };
+
+/**
+ * Emits the available models for the active chatbot
+ */
+const emitModelOptions = (activeChatbot: ChatBotEnum | string, model?: string) => {
+  const availableModels = cloneDeep(models.value[activeChatbot as ChatBotEnum]) || [];
+  const selectedModel = model === undefined ? formData.value[getModelKey(activeChatbot as ChatBotEnum)] : model;
+
+  if (selectedModel && !availableModels.includes(selectedModel)) {
+    availableModels.push(selectedModel);
+  }
+
+  const modelOptions = availableModels.map((model) => ({
+    value:      model,
+    isSelected: model === selectedModel
+  }));
+
+  emit('update:models', modelOptions);
+};
+
+/**
+ * Watches for changes in the models for the active chatbot.
+ */
+watch(
+  () => models.value[formData.value[Settings.ACTIVE_CHATBOT] as ChatBotEnum],
+  () => emitModelOptions(formData.value[Settings.ACTIVE_CHATBOT]),
+  { immediate: true }
+);
 
 onMounted(() => {
   const activeChatbot = formData.value[Settings.ACTIVE_CHATBOT];
@@ -625,7 +668,7 @@ onMounted(() => {
         :taggable="true"
         :searchable="true"
         :required="true"
-        @update:value="(val: string) => updateValue(getModelKey(formData[Settings.ACTIVE_CHATBOT]), val)"
+        @update:value="updateModelValue"
       />
       <Banner
         v-if="errorField[ChatBotEnum.Bedrock][getModelKey(ChatBotEnum.Bedrock)] && formData[Settings.ACTIVE_CHATBOT] === ChatBotEnum.Bedrock && modelValidation[ChatBotEnum.Bedrock].status === ValidationStatus.ERROR"
