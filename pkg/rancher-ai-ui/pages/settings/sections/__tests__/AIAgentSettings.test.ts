@@ -468,7 +468,7 @@ describe('AIAgentSettings.vue', () => {
           ...existingValue,
           [Settings.OPENAI_API_KEY]: 'sk-new'
         }
-      });
+      } as any);
       await wrapper.vm.$nextTick();
 
       // Verify component updated without error
@@ -1643,7 +1643,7 @@ describe('AIAgentSettings.vue', () => {
       const emissionsBeforeChange = (wrapper.emitted('update:models') || []).length;
 
       // Update the prop to change active chatbot
-      await wrapper.setProps({ value: { [Settings.ACTIVE_CHATBOT]: ChatBotEnum.Gemini } as SettingsFormData });
+      await wrapper.setProps({ value: { [Settings.ACTIVE_CHATBOT]: ChatBotEnum.Gemini } as SettingsFormData } as any);
       await wrapper.vm.$nextTick();
 
       // Should have emitted more times
