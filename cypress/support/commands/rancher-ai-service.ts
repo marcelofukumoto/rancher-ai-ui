@@ -5,7 +5,7 @@ import { rancherApiUrl } from '../utils/rancher-url';
  * Resolves a kubeconfig for the local cluster and yields its path.
  *
  * In the Helm-on-k3s CI topology a direct kubeconfig for the cluster is already on disk
- * (written by install-rancher.sh, path passed via the `kubeconfig` Cypress env). We use it
+ * (written by install-rancher-helm.sh, path passed via the `kubeconfig` Cypress env). We use it
  * directly because (a) Rancher's `generateKubeconfig` action returns a proxied kubeconfig
  * whose `config` is empty here, and (b) helm release metadata is only visible from the same
  * (direct) kubeconfig the charts were installed with, so `helm uninstall` actually tears the
@@ -16,7 +16,7 @@ function resolveKubeconfig(): Cypress.Chainable<string> {
   const directKubeconfig = Cypress.env('kubeconfig');
 
   if (directKubeconfig) {
-    return cy.wrap(directKubeconfig, { log: false });
+    return cy.wrap<string>(directKubeconfig, { log: false });
   }
 
   return cy.getCookie('CSRF').then((token) => {
@@ -32,9 +32,9 @@ function resolveKubeconfig(): Cypress.Chainable<string> {
 
       const kubeconfig = `${ Cypress.config('downloadsFolder') }/local.yaml`;
 
-      cy.writeFile(kubeconfig, resp.body.config);
-
-      return kubeconfig;
+      // cy.writeFile only enqueues the write, so the path has to be yielded from its chain -
+      // returning it directly would mix async and sync code and fail the command.
+      return cy.writeFile(kubeconfig, resp.body.config).then(() => kubeconfig);
     });
   });
 }

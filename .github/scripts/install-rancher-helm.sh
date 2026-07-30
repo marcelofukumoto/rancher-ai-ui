@@ -1,13 +1,20 @@
 #!/bin/bash
 
-# Install Rancher on a local k3s cluster via Helm, then bootstrap it.
+# Install Rancher on a local k3s cluster via Helm, then bootstrap it. This is what CI runs;
+# see install-rancher-docker.sh for the all-in-one container setup used for local development.
 #
-# Unlike the old all-in-one Docker container, this serves the *stock* Rancher
-# dashboard (never overridden). The rancher-ai-ui extension is loaded into it
-# dynamically at test time (developer load from an external extension server),
-# mirroring rancher/dashboard's Extension Compatibility test.
+# Unlike the Docker setup, this serves the *stock* Rancher dashboard (never overridden). The
+# rancher-ai-ui extension is loaded into it dynamically at test time (developer load from an
+# external extension server), mirroring rancher/dashboard's Extension Compatibility test.
 #
-# Usage: install-rancher.sh [VERSION] [CATTLE_SERVER_URL] [CATTLE_BOOTSTRAP_PASSWORD]
+# Usage: install-rancher-helm.sh [VERSION] [CATTLE_SERVER_URL] [CATTLE_BOOTSTRAP_PASSWORD] \
+#                                [RANCHER_CHART_CHANNEL] [K3S_VERSION]
+#
+#   VERSION               Rancher image tag, default `head`.
+#   RANCHER_CHART_CHANNEL Chart channel served by the Rancher chart repo, default `latest`.
+#                         Also accepts a release branch, e.g. `release-2.15`.
+#   K3S_VERSION           k3s version to install, default `latest` (the k3s stable channel).
+#                         Also accepts a pinned version, e.g. `v1.36.1+k3s1`.
 #
 # On success a kubeconfig for the k3s cluster is written to ./kubeconfig.yaml.
 
@@ -16,17 +23,20 @@ set -e
 VERSION="head"
 CATTLE_SERVER_URL="https://127.0.0.1.sslip.io"
 CATTLE_BOOTSTRAP_PASSWORD="password"
+RANCHER_CHART_CHANNEL="${RANCHER_CHART_CHANNEL:-latest}"
+K3S_VERSION="${K3S_VERSION:-latest}"
 
 if [ -n "$1" ]; then VERSION=$1; fi
 if [ -n "$2" ]; then CATTLE_SERVER_URL="$2"; fi
 if [ -n "$3" ]; then CATTLE_BOOTSTRAP_PASSWORD="$3"; fi
+if [ -n "$4" ]; then RANCHER_CHART_CHANNEL="$4"; fi
+if [ -n "$5" ]; then K3S_VERSION="$5"; fi
 
 # ---------------------------------
-# ----------------------- Config (Rancher head / 2.15)
+# ----------------------- Config
 # ---------------------------------
 
-KUBE_VERSION=${KUBE_VERSION:-v1.36.1+k3s1}
-RANCHER_HELM_REPO_URL=${RANCHER_HELM_REPO_URL:-https://charts.optimus.rancher.io/server-charts/release-2.15}
+RANCHER_HELM_REPO_URL=${RANCHER_HELM_REPO_URL:-https://charts.optimus.rancher.io/server-charts/${RANCHER_CHART_CHANNEL}}
 RANCHER_HELM_REPO_NAME=rancher-helm
 RANCHER_NAMESPACE=cattle-system
 
@@ -42,7 +52,7 @@ KUBECONFIG_PATH="$(pwd)/kubeconfig.yaml"
 
 echo "--------------------------------------"
 echo "Installing Rancher (Helm on k3s):"
-echo "  KUBE_VERSION:          ${KUBE_VERSION}"
+echo "  K3S_VERSION:           ${K3S_VERSION}"
 echo "  RANCHER_HELM_REPO_URL: ${RANCHER_HELM_REPO_URL}"
 echo "  RANCHER_IMG_REPO:      ${RANCHER_IMG_REPO}"
 echo "  RANCHER_IMG_TAG:       ${RANCHER_IMG_TAG}"
@@ -55,10 +65,14 @@ echo "--------------------------------------"
 # ---------------------------------
 
 echo ""
-echo "Installing k3s (${KUBE_VERSION}) ..."
-curl -sfL -o k3s-script https://raw.githubusercontent.com/k3s-io/k3s/v1.35.3%2Bk3s1/install.sh
+echo "Installing k3s (${K3S_VERSION}) ..."
+curl -sfL -o k3s-script https://get.k3s.io
 chmod +x k3s-script
-INSTALL_K3S_VERSION="$KUBE_VERSION" sh k3s-script
+if [ "$K3S_VERSION" = "latest" ]; then
+  INSTALL_K3S_CHANNEL=latest sh k3s-script
+else
+  INSTALL_K3S_VERSION="$K3S_VERSION" sh k3s-script
+fi
 
 export KUBECONFIG="$KUBECONFIG_PATH"
 sudo k3s kubectl config view --raw > "$KUBECONFIG"

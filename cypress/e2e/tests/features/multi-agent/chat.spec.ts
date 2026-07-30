@@ -199,9 +199,14 @@ describe('Multi Agent Chat', () => {
 
       // Restore the harvester agent config to have 2 active agents
       // TODO:
-      //   Adding a change to systemPrompt to trigger a force update of the agent status.
       //   This is a known issue with the controller that it does not update the status of an agent.
-      //   Once fixed, we can remove the systemPrompt change and just update the mcpURL.
+      //   Two workarounds are needed here, both of which should be removed once it is fixed:
+      //   1. Adding a change to systemPrompt to trigger a force update of the agent status.
+      //      Once fixed, we can remove the systemPrompt change and just update the mcpURL.
+      //   2. The cy.waitForAgentConfigActive below, which polls the API until the controller
+      //      reconciles harvester back to active before asserting the UI reflects it. The poll is
+      //      bounded and non-fatal: on timeout it logs the observed state and full status and lets
+      //      the UI assertion be the real check, so a stalled controller stays visible in the run.
       cy.updateAgentConfig({
         ...harvesterAgentConfig,
         spec: {
@@ -210,8 +215,7 @@ describe('Multi Agent Chat', () => {
         }
       });
 
-      // updateAgentConfig only PUTs the spec; wait for the controller to reconcile harvester back to
-      // active (2 active agents) before asserting the UI reflects it, instead of racing the reconcile.
+      // See workaround 2 in the TODO above.
       cy.waitForAgentConfigActive(harvesterAgentConfig);
 
       // Verify that the Adaptive Agent(s) Selection option is shown again and is selected by default
