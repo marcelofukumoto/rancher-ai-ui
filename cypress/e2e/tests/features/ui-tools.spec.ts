@@ -13,6 +13,12 @@ describe('UI Tools', () => {
   const chat = new ChatPo();
 
   describe('Required action: installation', () => {
+    before(() => {
+      cy.login();
+
+      cy.uninstallUIToolsDefinition();
+    });
+
     beforeEach(() => {
       cy.login();
 
