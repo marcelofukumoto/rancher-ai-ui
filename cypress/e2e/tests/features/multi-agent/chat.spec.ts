@@ -199,9 +199,13 @@ describe('Multi Agent Chat', () => {
 
       // Restore the harvester agent config to have 2 active agents
       // TODO:
-      //   Adding a change to systemPrompt to trigger a force update of the agent status.
       //   This is a known issue with the controller that it does not update the status of an agent.
-      //   Once fixed, we can remove the systemPrompt change and just update the mcpURL.
+      //   Two workarounds are needed here, both of which should be removed once it is fixed:
+      //   1. Adding a change to systemPrompt to trigger a force update of the agent status.
+      //      Once fixed, we can remove the systemPrompt change and just update the mcpURL.
+      //   2. The cy.waitForResourceState below, which waits for the controller to reconcile
+      //      harvester back to active before asserting the UI reflects it. It is bounded and
+      //      non-fatal, so a stalled controller lets the UI assertion be the real check.
       cy.updateAgentConfig({
         ...harvesterAgentConfig,
         spec: {
@@ -209,6 +213,10 @@ describe('Multi Agent Chat', () => {
           systemPrompt: 'Harvester system prompt new',
         }
       });
+
+      // See workaround 2 in the TODO above. updateAgentConfig only PUTs the spec; the controller
+      // updates metadata.state asynchronously, so wait for it to report active instead of racing it.
+      cy.waitForResourceState('apis/ai.cattle.io/v1alpha1' as 'v1', 'namespaces/cattle-ai-agent-system/aiagentconfigs', harvesterAgentConfig.metadata.name, 'active', 20);
 
       // Verify that the Adaptive Agent(s) Selection option is shown again and is selected by default
       selectAgent.self().contains('Adaptive Agent(s) Selection');

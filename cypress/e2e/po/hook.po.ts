@@ -33,8 +33,10 @@ export class SlidingBadgePo extends HookPo {
   showFirstStage() {
     this.target.isReady();
 
-    // Trigger mouse enter on the target element to reveal the sliding badge's first stage
-    this.target.self().trigger('mouseenter', { force: true });
+    // Trigger mouse enter on the target element to reveal the sliding badge's first stage.
+    // Scope to the first match: the target selector can transiently match more than one badge
+    // while the resource's state is still settling (e.g. an extra bg-info badge during load).
+    this.target.self().first().trigger('mouseenter', { force: true });
 
     this.overlay().should('exist');
   }
@@ -42,8 +44,9 @@ export class SlidingBadgePo extends HookPo {
   showSecondStage() {
     this.showFirstStage();
 
-    // Trigger mouse enter on the sliding badge to reveal its second stage
-    this.overlay().trigger('mouseenter', { force: true });
+    // Trigger mouse enter on the sliding badge to reveal its second stage. Scope to the first
+    // overlay too - a transient second matching badge produces a second overlay.
+    this.overlay().first().trigger('mouseenter', { force: true });
 
     // Wait for the overlay to expand
     this.overlay().invoke('width').should('be.greaterThan', 70);

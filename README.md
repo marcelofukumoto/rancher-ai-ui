@@ -45,6 +45,38 @@ yarn serve-pkgs
 
 ## E2E tests
 
+#### Install Rancher
+
+Two setups are available:
+
+```bash
+# Docker - a single all-in-one container, serving the UI from `yarn dev`. Handy for local development.
+./.github/scripts/install-rancher-docker.sh
+
+# Helm on k3s - Rancher installed on a real k3s cluster, serving its own dashboard with the
+# extension developer-loaded into it (same-origin, no dev proxy). This is what CI runs.
+./.github/scripts/install-rancher-helm.sh
+```
+
+Both write a kubeconfig for the cluster to `./kubeconfig.yaml`.
+
+The Helm setup takes the Rancher chart channel and the k3s version as parameters, both defaulting
+to `latest`:
+
+```bash
+# Usage: install-rancher-helm.sh [VERSION] [CATTLE_SERVER_URL] [CATTLE_BOOTSTRAP_PASSWORD] \
+#                                [RANCHER_CHART_CHANNEL] [K3S_VERSION]
+./.github/scripts/install-rancher-helm.sh head https://127.0.0.1.sslip.io password release-2.15 v1.36.1+k3s1
+```
+
+With the Helm setup, the extension is loaded from a local catalog server rather than `yarn dev`:
+
+```bash
+yarn build-pkg rancher-ai-ui
+./.github/scripts/start-extension-server.sh          # serve-pkgs on :8080
+./.github/scripts/register-extension.sh 8080 ./kubeconfig.yaml
+```
+
 #### Install AI Agent chart
 
 This will install the AI Agent Helm chart into your Kubernetes cluster.
@@ -56,6 +88,8 @@ The LLM is configured to use a mock service for testing purposes.
 
 #### Launch UI in dev mode
 
+Only needed for the Docker setup - with the Helm setup Rancher serves the UI itself.
+
 ```bash
 API=https://your-rancher yarn dev
 ```
@@ -64,10 +98,10 @@ API=https://your-rancher yarn dev
 
 ```bash
 # Launch Cypress dashboard - interactive mode
-TEST_SKIP=setup TEST_PASSWORD=${rancher-password} yarn cypress:open
+TEST_SKIP=setup TEST_PASSWORD=${rancher-password} KUBECONFIG_PATH=$YOUR_KUBECONFIG_PATH yarn cypress:open
 
 # Run Cypress tests in background
-TEST_SKIP=setup TEST_PASSWORD=${rancher-password} yarn cypress:run
+TEST_SKIP=setup TEST_PASSWORD=${rancher-password} KUBECONFIG_PATH=$YOUR_KUBECONFIG_PATH yarn cypress:run
 ```
 
 #### Environment variables
@@ -75,7 +109,12 @@ TEST_SKIP=setup TEST_PASSWORD=${rancher-password} yarn cypress:run
 - `TEST_USERNAME`, default `admin`.
 - `TEST_PASSWORD`, user password or custom during first Rancher run.
 - `CATTLE_BOOTSTRAP_PASSWORD`, initialization password.
-- `TEST_BASE_URL`, Rancher UI dev URL, default `https://localhost:8005`.
+- `TEST_BASE_URL`, Rancher UI URL. Default `https://localhost:8005` (`yarn dev`); with the Helm
+  setup point it at Rancher's own dashboard, e.g. `https://127.0.0.1.sslip.io/dashboard`.
+- `KUBECONFIG_PATH`, path to a kubeconfig with direct access to the cluster. The AI service
+  install/uninstall commands use it instead of Rancher's `generateKubeconfig` action, which is
+  required for `helm uninstall` to actually tear the agent down. Optional - falls back to
+  `generateKubeconfig` when unset.
 - `TEST_SKIP=setup`, avoid to execute bootstrap setup tests for already initialized Rancher instances, it has to be toggled in case of new instances
 
 
