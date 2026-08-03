@@ -34,38 +34,6 @@ function getAgentConfig(namespace: string, name: string, attempts = 15): Cypress
 }
 
 /**
- * Polls an AIAgentConfig until the controller reports it active (Steve's metadata.state.name, which
- * is exactly what the UI's config.state resolves to). updateAgentConfig only PUTs the spec; the
- * controller updates the status asynchronously, so a test that asserts the UI reflects an agent
- * becoming active must wait for that reconcile instead of racing it. Bounded and non-fatal: if it
- * never reports active it proceeds and lets the caller's own UI assertion be the real check, so a
- * status-shape surprise or a stalled controller can't hang the suite.
- */
-function pollAgentConfigActive(namespace: string, name: string, attempts = 20): Cypress.Chainable<any> {
-  return getAgentConfig(namespace, name).then((resp) => {
-    const state = resp.body?.metadata?.state?.name;
-
-    // Every branch yields via a cy chain (cy.wrap / recursion): returning the bare resp object from
-    // a .then chained onto the custom getAgentConfig helper trips Cypress's "mixing async and sync
-    // code" guard.
-    if (state === 'active') {
-      return cy.wrap(resp, { log: false });
-    }
-
-    if (attempts <= 1) {
-      // Surface the observed state/status so the reconcile signal can be confirmed / corrected.
-      cy.log(`pollAgentConfigActive: ${ namespace }/${ name } not active after retries (state='${ state }', status=${ JSON.stringify(resp.body?.status) }); proceeding`);
-
-      return cy.wrap(resp, { log: false });
-    }
-
-    cy.wait(1500);
-
-    return pollAgentConfigActive(namespace, name, attempts - 1);
-  });
-}
-
-/**
  * Create agent config in the cluster
  *
  * @return void
@@ -105,15 +73,4 @@ Cypress.Commands.add('deleteAgentConfig', (config: object) => {
   const { name, namespace } = (config as any).metadata;
 
   cy.deleteRancherResource('v1', 'ai.cattle.io.aiagentconfig', `${ namespace }/${ name }`, false);
-});
-
-/**
- * Waits for an agent config to be reconciled to the active state by the controller.
- *
- * @return void
- */
-Cypress.Commands.add('waitForAgentConfigActive', (config: object) => {
-  const { name, namespace } = (config as any).metadata;
-
-  return pollAgentConfigActive(namespace, name);
 });

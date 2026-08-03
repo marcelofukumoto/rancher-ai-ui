@@ -30,7 +30,6 @@ declare global {
       createAgentConfig(config: object): void;
       updateAgentConfig(config: object): void;
       deleteAgentConfig(config: object): void;
-      waitForAgentConfigActive(config: object): void;
       installUIToolsDefinition(): void;
       updateUIToolsDefinition(): void;
       uninstallUIToolsDefinition(): void;
