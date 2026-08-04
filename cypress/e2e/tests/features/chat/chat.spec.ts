@@ -335,7 +335,7 @@ describe('Chat', () => {
       resultMessageAfterReconnection.isCompleted();
     });
 
-    it('it should handle disconnections when the ai service becomes unavailable', () => {
+    it('it should handle disconnections when the AI service becomes unavailable', () => {
       HomePagePo.goTo();
 
       chat.open();
