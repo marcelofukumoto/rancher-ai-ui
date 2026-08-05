@@ -1,0 +1,30 @@
+name: Test vue-router fix (dashboard PR)
+
+# Builds this extension against a rancher/dashboard PR's patched @rancher/shell and asserts the
+# extension bundle no longer externalises vue-router (rancher/dashboard#18657). Build-time only -
+# see .github/scripts/README-vue-router-test.md for the manual runtime step on an old Rancher.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: 'rancher/dashboard PR number to test'
+        required: false
+        default: '18657'
+        type: string
+
+jobs:
+  build-against-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node env
+        uses: ./.github/actions/setup
+
+      - name: Build extension against the dashboard PR and assert
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./.github/scripts/test-vue-router-fix.sh --pr ${{ inputs.pr }} --baseline
