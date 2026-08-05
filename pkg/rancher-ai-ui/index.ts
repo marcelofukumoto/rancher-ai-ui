@@ -19,7 +19,10 @@ export default function(plugin: IPlugin, { store }: any): void {
   const isDev = (plugin as any).builtin; // Running in development mode
   const isPrime = plugin.environment.isPrime;
 
-  if (!isDev && !isPrime) {
+  // [vue-router repro] `false &&` bypasses the Prime/dev gate so a dev-loaded build always
+  // loads its product + AI Settings page on a <2.15 host, making the useRoute crash reachable.
+  // See rancher/dashboard#18657. Remove after the visual test.
+  if (false && !isDev && !isPrime) {
     warn('Rancher Prime subscription required');
 
     plugin.addNavHooks({
