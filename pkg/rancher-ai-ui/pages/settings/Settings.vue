@@ -26,6 +26,10 @@ import AsyncButton, { AsyncButtonCallback } from '@shell/components/AsyncButton.
 import Loading from '@shell/components/Loading.vue';
 import RichTranslation from '@shell/components/RichTranslation.vue';
 import AppModal from '@shell/components/AppModal.vue';
+// [vue-router repro] ActionMenuShell calls useRoute() in setup(); on a Rancher <2.15 host
+// (no window.__vueRouter) the externalised vue-router is undefined and this crashes on mount.
+// See rancher/dashboard#18657. Remove after the visual test.
+import ActionMenuShell from '@shell/components/ActionMenuShell.vue';
 import {
   SettingsFormData, Settings, Workload, AiAgentConfigBasicSecretPayload, AIAgentConfigAuthType,
   SettingsPermissions,
@@ -694,6 +698,11 @@ onMounted(async() => {
 
 <template>
   <div class="ai-configs-container">
+    <!-- [vue-router repro] mounts ActionMenuShell → useRoute() at setup → crashes on Rancher <2.15. Remove after the visual test. -->
+    <div class="vue-router-repro" style="display: flex; align-items: center; gap: 8px; padding: 8px 0;">
+      <span>vue-router probe (⋮):</span>
+      <ActionMenuShell />
+    </div>
     <loading v-if="isLoading" />
     <div
       v-else
